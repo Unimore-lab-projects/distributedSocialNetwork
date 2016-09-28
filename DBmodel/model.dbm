@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.8.2" last-position="0,0" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<database name="distributedSocialDB">
+	<role name="postgres"/>
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="known_nodes">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="140" y="320"/>
+	<column name="user_id" not-null="true">
+		<type name="uuid"/>
+	</column>
+	<column name="username">
+		<type name="varchar" length="16"/>
+	</column>
+	<column name="address">
+		<type name="cidr"/>
+	</column>
+	<column name="port">
+		<type name="smallint"/>
+	</column>
+	<column name="last_update">
+		<type name="timestamp"/>
+	</column>
+	<constraint name="PK" type="pk-constr" table="public.known_nodes">
+		<columns names="user_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="friends">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="620" y="320"/>
+</table>
+
+<relationship name="friends_has_one_known_nodes" type="rel11"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#b55a2c"
+	 src-table="public.known_nodes"
+	 dst-table="public.friends"
+	 src-required="true" dst-required="false"
+	 identifier="true"
+/>
+
+<table name="comments">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="620" y="180"/>
+	<column name="comment_id" not-null="true">
+		<type name="timestamp"/>
+	</column>
+	<column name="content">
+		<type name="varchar" length="512"/>
+	</column>
+	<column name="user_id">
+		<type name="uuid"/>
+	</column>
+	<column name="post_id">
+		<type name="timestamp"/>
+	</column>
+	<constraint name="comments_pk" type="pk-constr" table="public.comments">
+		<columns names="comment_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="posts">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="300" y="220"/>
+	<column name="post_id" not-null="true">
+		<type name="timestamp"/>
+	</column>
+	<column name="user_id">
+		<type name="uuid"/>
+	</column>
+	<constraint name="post_pk" type="pk-constr" table="public.posts">
+		<columns names="post_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="post_img">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="220" y="20"/>
+	<column name="path_to_file">
+		<type name="varchar" length="512"/>
+	</column>
+</table>
+
+<table name="post_text">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="500" y="20"/>
+	<column name="content">
+		<type name="varchar" length="512"/>
+	</column>
+</table>
+
+<table name="my_user">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="0" y="220"/>
+	<column name="user_id" not-null="true">
+		<type name="uuid"/>
+	</column>
+	<column name="username">
+		<type name="varchar" length="16"/>
+	</column>
+	<constraint name="my_user_pk" type="pk-constr" table="public.my_user">
+		<columns names="user_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="post_img_inherits_posts" type="relgen"
+	 pk-pattern="{dt}_pk"
+	 custom-color="#85720e"
+	 src-table="public.post_img"
+	 dst-table="public.posts"/>
+
+<relationship name="post_text_inherits_posts" type="relgen"
+	 pk-pattern="{dt}_pk"
+	 custom-color="#be77b8"
+	 src-table="public.post_text"
+	 dst-table="public.posts"/>
+
+<constraint name="comments_post_id_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.posts" table="public.comments">
+	<columns names="post_id" ref-type="src-columns"/>
+	<columns names="post_id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="comments_user_id_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.friends" table="public.comments">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="user_id_known_nodes" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="post_user_id_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.my_user" table="public.posts">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="user_id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_comments_friends" type="relfk"
+	 src-table="public.comments"
+	 dst-table="public.friends"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_comments_posts" type="relfk"
+	 src-table="public.comments"
+	 dst-table="public.posts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_posts_my_user" type="relfk"
+	 src-table="public.posts"
+	 dst-table="public.my_user"
+	 src-required="false" dst-required="false"/>
+
+</dbmodel>
