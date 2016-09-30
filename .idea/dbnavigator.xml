@@ -23,15 +23,28 @@
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
-    <loaded-nodes />
+    <loaded-nodes>
+      <connection connection-id="76ab285e-d9db-4578-8ff8-f7253041e029">
+        <schema name="information_schema" object-types="table, view" />
+        <schema name="pg_catalog" object-types="table, view" />
+        <schema name="public" object-types="column, constraint, function, index, sequence, table, dataset trigger, view" />
+      </connection>
+    </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="9e2d5fec-87f9-4f59-961c-5218c40c09b7">
-      <console name="socialDB" type="STANDARD" />
+    <connection id="76ab285e-d9db-4578-8ff8-f7253041e029">
+      <console name="mydatabase" type="STANDARD" />
     </connection>
+  </component>
+  <component name="DBNavigator.Project.DatasetFilterManager">
+    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.known_nodes" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.my_user" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
+  </component>
+  <component name="DBNavigator.Project.FileConnectionMappingManager">
+    <mapping file-url="file://$PROJECT_DIR$/sql/insert_my_user.sql" connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" current-schema="public" />
   </component>
   <component name="DBNavigator.Project.MethodExecutionManager">
     <method-browser />
@@ -53,23 +66,23 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="9e2d5fec-87f9-4f59-961c-5218c40c09b7" active="true">
+      <connection id="76ab285e-d9db-4578-8ff8-f7253041e029" active="true">
         <database>
-          <name value="socialDB" />
+          <name value="mydatabase" />
           <description value="" />
           <database-type value="POSTGRES" />
           <config-type value="BASIC" />
-          <database-version value="9999.0" />
+          <database-version value="9.5" />
           <driver-source value="BUILTIN" />
           <driver-library value="" />
           <driver value="" />
           <url-type value="DATABASE" />
           <host value="localhost" />
           <port value="5432" />
-          <database value="postgres" />
+          <database value="mydatabase" />
           <os-authentication value="false" />
-          <empty-password value="false" />
-          <user value="" />
+          <empty-password value="true" />
+          <user value="archeffect" />
           <password value="" />
         </database>
         <properties>
@@ -519,6 +532,14 @@
     </general-settings>
   </component>
   <component name="DBNavigator.Project.StatementExecutionManager">
-    <execution-variables />
+    <execution-variables>
+      <file path="file://$PROJECT_DIR$/sql/testqueries.sql">
+        <variable name=":username" dataType="LITERAL" values="" />
+        <variable name=":last_update" dataType="LITERAL" values="" />
+        <variable name=":address" dataType="LITERAL" values="" />
+        <variable name=":port" dataType="LITERAL" values="" />
+        <variable name=":user_id" dataType="LITERAL" values="asd" />
+      </file>
+    </execution-variables>
   </component>
 </project>
