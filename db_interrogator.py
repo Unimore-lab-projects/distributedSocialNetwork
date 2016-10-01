@@ -12,16 +12,16 @@ class DatabaseInterrogator:
 
     # my_user
 
-    def __done_user_id(self, me):
+    def __done_my_user(self, me):
         """Ritorna un oggetto my_user contente il proprio usename e user_id"""
         logging.debug("my username is %s " % me.username)
         logging.debug("my uuid is %s " % me.user_id)
         return me
 
-    def get_user_id(self):
+    def get_my_user(self):
         """ottiene il primo risulato in my_user. non dovrebbero esserci altre entry"""
         me = My_user()
-        return me.find(limit=1).addCallback(self.__done_user_id)
+        return me.find(limit=1).addCallback(self.__done_my_user)
 
     # known_nodes
 

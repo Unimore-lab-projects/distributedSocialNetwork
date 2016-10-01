@@ -20,7 +20,7 @@ log.startLogging(sys.stdout)
 dbpool = open_connecton()
 inter = DatabaseInterrogator(dbpool)
 
-inter.get_user_id().addCallback(printData)
+inter.get_my_user().addCallback(printData)
 
 reactor.callLater(2, reactor.stop)
 
