@@ -70,6 +70,9 @@ class DatabaseInsertor:
         Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address, port,
                                                                            last_update)
 
+    def insert_node(self, node):
+        Known_node.find(where=['user_id=?', node.user_id], limit=1).addCallback(self.__update_node, node.user_id, node.address, node.port, node.last_update)
+
     # TODO INSERT A POST
 
     # def __check_post(self, post):
