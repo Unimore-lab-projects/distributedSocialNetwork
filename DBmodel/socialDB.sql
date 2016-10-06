@@ -30,18 +30,18 @@ CREATE ROLE archeffect WITH
 -- -- ddl-end --
 -- 
 
--- object: public.known_nodes | type: TABLE --
--- DROP TABLE IF EXISTS public.known_nodes CASCADE;
-CREATE TABLE public.known_nodes(
-	user_id uuid NOT NULL,
-	address cidr,
-	port smallint,
-	last_update timestamp,
-	CONSTRAINT "PK" PRIMARY KEY (user_id)
-
-);
+-- object: public.known_nodes_id_seq | type: SEQUENCE --
+-- DROP SEQUENCE IF EXISTS public.known_nodes_id_seq CASCADE;
+CREATE SEQUENCE public.known_nodes_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START WITH 1
+	CACHE 1
+	NO CYCLE
+	OWNED BY NONE;
 -- ddl-end --
-ALTER TABLE public.known_nodes OWNER TO postgres;
+ALTER SEQUENCE public.known_nodes_id_seq OWNER TO postgres;
 -- ddl-end --
 
 -- object: public.friends | type: TABLE --
@@ -84,23 +84,46 @@ CREATE TABLE public.posts(
 ALTER TABLE public.posts OWNER TO postgres;
 -- ddl-end --
 
+-- object: public.my_user_id_seq | type: SEQUENCE --
+-- DROP SEQUENCE IF EXISTS public.my_user_id_seq CASCADE;
+CREATE SEQUENCE public.my_user_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START WITH 1
+	CACHE 1
+	NO CYCLE
+	OWNED BY NONE;
+-- ddl-end --
+ALTER SEQUENCE public.my_user_id_seq OWNER TO postgres;
+-- ddl-end --
+
 -- object: public.my_user | type: TABLE --
 -- DROP TABLE IF EXISTS public.my_user CASCADE;
 CREATE TABLE public.my_user(
 	user_id uuid NOT NULL,
 	username character varying(16),
-	CONSTRAINT my_user_pk PRIMARY KEY (user_id)
+	id integer NOT NULL DEFAULT nextval('public.my_user_id_seq'::regclass),
+	CONSTRAINT my_user_id_pk PRIMARY KEY (id)
 
 );
 -- ddl-end --
 ALTER TABLE public.my_user OWNER TO postgres;
 -- ddl-end --
 
--- object: known_nodes_fk | type: CONSTRAINT --
--- ALTER TABLE public.friends DROP CONSTRAINT IF EXISTS known_nodes_fk CASCADE;
-ALTER TABLE public.friends ADD CONSTRAINT known_nodes_fk FOREIGN KEY (user_id_known_nodes)
-REFERENCES public.known_nodes (user_id) MATCH FULL
-ON DELETE CASCADE ON UPDATE CASCADE;
+-- object: public.known_nodes | type: TABLE --
+-- DROP TABLE IF EXISTS public.known_nodes CASCADE;
+CREATE TABLE public.known_nodes(
+	user_id uuid NOT NULL,
+	address cidr,
+	port smallint,
+	last_update timestamp,
+	id integer NOT NULL DEFAULT nextval('public.known_nodes_id_seq'::regclass),
+	CONSTRAINT known_nodes_id_pk PRIMARY KEY (id)
+
+);
+-- ddl-end --
+ALTER TABLE public.known_nodes OWNER TO postgres;
 -- ddl-end --
 
 -- object: comments_post_id_fk | type: CONSTRAINT --
@@ -114,13 +137,6 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE public.comments DROP CONSTRAINT IF EXISTS comments_user_id_fk CASCADE;
 ALTER TABLE public.comments ADD CONSTRAINT comments_user_id_fk FOREIGN KEY (user_id)
 REFERENCES public.friends (user_id_known_nodes) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
--- ddl-end --
-
--- object: post_user_id_fk | type: CONSTRAINT --
--- ALTER TABLE public.posts DROP CONSTRAINT IF EXISTS post_user_id_fk CASCADE;
-ALTER TABLE public.posts ADD CONSTRAINT post_user_id_fk FOREIGN KEY (user_id)
-REFERENCES public.my_user (user_id) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 

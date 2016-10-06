@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*
+import datetime
 from uuid import uuid4
 
 from psycopg2 import extras
@@ -14,50 +15,75 @@ class DatabaseInsertor:
 
     def __user_done(self, user):
         if len(user.errors) > 0:
-            print '%s errors in user creation' % len(user.errors)
-            print user.errors
+            logging.error('%s errors in user creation' % len(user.errors))
+            logging.error(user.errors)
         else:
             logging.debug("My user created. uuid is %s and username is %s" % (user.user_id, user.username))
 
-    def __check_existence(self, userExists, me):
+    def __check_existence(self, userExists, name):
+        """se non esiste lo crea."""
         if userExists == 0:
+            extras.register_uuid()
+            me = My_user(user_id=uuid4(), username=name)
             me.save().addCallback(self.__user_done)
         else:
             logging.debug("user already existing")
 
     def insert_my_user(self, name):
-        """Inserisce il proprio utente con nome dato e uuid randomico"""
-        extras.register_uuid()
-        # my_uuid = uuid4()
-        # extensions.adapt(my_uuid).getquoted()
-        me = My_user(user_id=uuid4(), username=name)
-        # controlla se esiste già un utente
-        My_user.count().addCallback(self.__check_existence, me)
+        """controlla se esiste già un utente"""
+        My_user.count().addCallback(self.__check_existence, name)
 
-    # INSERT OR UPDATE A NODE
+    # INSERT O UPDATE di un NODE
 
-    def __check_node_exists(self, doExists, address, port):
-        if doExists:
+    def __node_created(self, node):
+        if len(node.errors) > 0:
+            logging.error('%s errors in node creation' % len(node.errors))
+            logging.error(node.errors)
+        else:
+            logging.debug("Node created. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
+
+    def __node_updated(self, node):
+        if len(node.errors) > 0:
+            logging.error('%s errors in node update' % len(node.errors))
+            logging.error(node.errors)
+        else:
+            logging.debug("Node updated. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
+
+    def __update_node(self, node, user_id, address, port, last_update):
+        if node == None:
+            # node doesn't exists
             node = Known_node()
+            node.user_id = user_id
+            node.address = address
+            node.port = port
+            node.last_update = datetime.today()
+            node.save().addCallback(self.__node_created)
         else:
-            return False
+            if node.last_update < last_update:
+                attrs = {'address': address, 'port': port, 'last_update': last_update}
+                node.updateAttrs(attrs)
+                node.save().addCallback(self.__node_updated)
+            else:
+                logging.debug("nodo inserito piu vecchio di quello già esistente")
 
-    def insert_node(self, user_id, address, port):
-        Known_node.exists(['user_id = ?', user_id]).addCallback(self.__check_node_exists, address, port)
+    def insert_node(self, user_id, address, port, last_update):
+        Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address, port,
+                                                                           last_update)
 
-    # INSERT A POST
+    # TODO INSERT A POST
 
-    def __check_post(self, post):
-        if post.errors.isEmpty():
-            logging.debug("Post successfully saved with id %s" % post.post_id)
-        else:
-            print post.errors
+    # def __check_post(self, post):
+    #     if post.errors.isEmpty():
+    #         logging.debug("Post successfully saved with id %s" % post.post_id)
+    #     else:
+    #         print post.errors
+    #
+    # def insert_post(self, text=None, image_path=None):
+    #     post = Post
+    #     # TODO da rifare la correzione dei tipi
+    #     # post.post_id = time.time()
+    #     post.path_to_imagefile = image_path
+    #     post.text_content = text
+    #     post.user_id = self.__my_id
+    #     post.save().addCallback(self.__check_post)
 
-    def insert_post(self, text=None, image_path=None):
-        post = Post
-        # TODO da rifare la correzione dei tipi
-        # post.post_id = time.time()
-        post.path_to_imagefile = image_path
-        post.text_content = text
-        post.user_id = self.__my_id
-        post.save().addCallback(self.__check_post)
