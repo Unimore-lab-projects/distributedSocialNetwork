@@ -66,7 +66,7 @@ class DatabaseInsertor:
             else:
                 logging.debug("nodo inserito piu vecchio di quello già esistente")
 
-    def insert_node(self, user_id, address, port, last_update):
+    def insert_node_2(self, user_id, address, port, last_update):
         Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address, port,
                                                                            last_update)
 
