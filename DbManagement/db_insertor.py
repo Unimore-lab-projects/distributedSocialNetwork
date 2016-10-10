@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*
-import datetime
+from datetime import datetime
 from uuid import uuid4
 
 from psycopg2 import extras
@@ -56,7 +56,7 @@ class DatabaseInsertor:
             node.user_id = user_id
             node.address = address
             node.port = port
-            node.last_update = datetime.datetime.today()
+            node.last_update = datetime.today()
             node.save().addCallback(self.__node_created)
         else:
             if node.last_update < last_update:
