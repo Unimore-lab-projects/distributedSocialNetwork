@@ -83,15 +83,10 @@ class DatabaseInsertor:
 
     # INSERT A POST
 
-    def insert_post(self, post=None, user_id=None, text_content=None, path_to_imagefile=None):
-        if post is None:
-            post = Post()
-            if user_id == None | (text_content == None & path_to_imagefile == None):
-                # TODO
-                pass
-            # TODO
-            pass
+    def insert_post(self, post=None):
+        # TODO
         pass
+
 
     # INSERT A FRIEND
 
