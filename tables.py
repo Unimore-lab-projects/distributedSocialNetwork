@@ -18,7 +18,8 @@ class Friend(DBObject):
 
 Friend.validatesUniquenessOf('user_id_known_nodes')
 Friend.validatesPresenceOf('user_id_known_nodes')
-Friend.validatesLengthOf('username', range=xrange(1,16))
+Friend.validatesLengthOf('username', range=xrange(1, 16))
+
 
 class Comment(DBObject):
     pass
@@ -28,7 +29,7 @@ Comment.validatesPresenceOf('comment_id')
 Comment.validatesPresenceOf('post_id')
 Comment.validatesPresenceOf('user_lid')
 Comment.validatesUniquenessOf('comment_id')
-Comment.validatesLengthOf('content', range=xrange(0,512))
+Comment.validatesLengthOf('content', range=xrange(0, 512))
 
 
 class Post(DBObject):
@@ -37,7 +38,7 @@ class Post(DBObject):
 
 Post.validatesUniquenessOf('post_id')
 Post.validatesPresenceOf('post_id')
-Post.validatesLengthOf('text_content', range=xrange(0,512))
+Post.validatesLengthOf('text_content', range=xrange(0, 512))
 
 
 class My_user(DBObject):
@@ -47,4 +48,4 @@ class My_user(DBObject):
 My_user.validatesUniquenessOf('user_id')
 My_user.validatesPresenceOf('user_id')
 My_user.validatesPresenceOf('username')
-My_user.validatesLengthOf('username', range=xrange(1,16))
+My_user.validatesLengthOf('username', range=xrange(1, 16))

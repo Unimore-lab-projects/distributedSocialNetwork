@@ -20,9 +20,9 @@ class DatabaseInsertor:
         else:
             logging.debug("My user created. uuid is %s and username is %s" % (user.user_id, user.username))
 
-    def __check_existence(self, userExists, name):
+    def __check_existence(self, user_exists, name):
         """se non esiste lo crea."""
-        if userExists == 0:
+        if user_exists == 0:
             extras.register_uuid()
             me = My_user(user_id=uuid4(), username=name)
             me.save().addCallback(self.__user_done)
@@ -50,13 +50,13 @@ class DatabaseInsertor:
             logging.debug("Node updated. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
 
     def __update_node(self, node, user_id, address, port, last_update):
-        if node == None:
+        if node is None:
             # node doesn't exists
             node = Known_node()
             node.user_id = user_id
             node.address = address
             node.port = port
-            node.last_update = datetime.today()
+            node.last_update = datetime.datetime.today()
             node.save().addCallback(self.__node_created)
         else:
             if node.last_update < last_update:
@@ -66,27 +66,34 @@ class DatabaseInsertor:
             else:
                 logging.debug("nodo inserito piu vecchio di quello già esistente")
 
-    def insert_node_2(self, user_id, address, port, last_update):
-        Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address, port,
-                                                                           last_update)
+    def insert_node(self, node=None, user_id=None, address=None, port=None, last_update=None):
+        if node is None:
+            Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address,
+                                                                               port,
+                                                                               last_update)
+        else:
+            # if Node != None use it
+            Known_node.find(where=['user_id=?', node.user_id], limit=1).addCallback(self.__update_node, node.user_id,
+                                                                                    node.address, node.port,
+                                                                                    node.last_update)
 
-    def insert_node(self, node):
-        Known_node.find(where=['user_id=?', node.user_id], limit=1).addCallback(self.__update_node, node.user_id, node.address, node.port, node.last_update)
+    def insert_node_list(self, node_list):
+        for node in node_list:
+            self.insert_node(node)
 
-    # TODO INSERT A POST
+    # INSERT A POST
 
-    # def __check_post(self, post):
-    #     if post.errors.isEmpty():
-    #         logging.debug("Post successfully saved with id %s" % post.post_id)
-    #     else:
-    #         print post.errors
-    #
-    # def insert_post(self, text=None, image_path=None):
-    #     post = Post
-    #     # TODO da rifare la correzione dei tipi
-    #     # post.post_id = time.time()
-    #     post.path_to_imagefile = image_path
-    #     post.text_content = text
-    #     post.user_id = self.__my_id
-    #     post.save().addCallback(self.__check_post)
+    def insert_post(self, post=None, user_id=None, text_content=None, path_to_imagefile=None):
+        if post is None:
+            post = Post()
+            if user_id == None | (text_content == None & path_to_imagefile == None):
+                # TODO
+                pass
+            # TODO
+            pass
+        pass
 
+    # INSERT A FRIEND
+
+    def insert_friend(self, ):
+        pass

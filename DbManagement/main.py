@@ -29,7 +29,7 @@ timest = datetime.today() - timedelta(minutes=15)
 # necessario per inserire un uuid
 extras.register_uuid()
 my_uuid = '4fb2fd7d-5985-4490-a9b8-ffd6a21166c5'
-inser.insert_node_2(my_uuid, '127.0.0.1', '1232', timest)
+inser.insert_node(None, my_uuid, '127.0.0.1', '1232', timest)
 
 # istanza per i metodi di interrogazione del db
 inter = DatabaseInterrogator(dbpool)
