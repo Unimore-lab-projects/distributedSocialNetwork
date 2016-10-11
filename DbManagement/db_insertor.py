@@ -3,7 +3,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from psycopg2 import extras
-
+from twisted.python import log
 from db_interrogator import *
 
 
@@ -25,7 +25,7 @@ class DatabaseInsertor:
         if user_exists == 0:
             extras.register_uuid()
             me = My_user(user_id=uuid4(), username=name)
-            me.save().addCallback(self.__user_done)
+            me.save().addCallbacks(self.__user_done, log.err)
         else:
             logging.debug("user already existing")
 
