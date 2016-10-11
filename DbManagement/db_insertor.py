@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*
-from datetime import datetime
 from uuid import uuid4
 
 from psycopg2 import extras
-from twisted.python import log
-from db_interrogator import *
 from twistar.dbconfig.base import InteractionBase
+from twisted.python import log
+
+from db_interrogator import *
 from debug_messages import *
 
 
@@ -13,9 +13,9 @@ class DatabaseInsertor:
     def __init__(self, dbpool):
         Registry.DBPOOL = dbpool
         # logging necessario
-        enable_logging()
-        InteractionBase.LOG = True
-        log.startLogging(sys.stdout)
+        # enable_logging()
+        # InteractionBase.LOG = True
+        # log.startLogging(sys.stdout)
         # end logging
 
     # INSERT USER
@@ -94,8 +94,35 @@ class DatabaseInsertor:
         # TODO
         pass
 
-
     # INSERT A FRIEND
+    def __done_save_friend(self, result):
+        if len(result.errors) > 0:
+            logging.error('%s errors adding a friend:' % len(result.errors))
+            logging.error(result.errors)
+            return False
+        else:
+            logging.debug("friend added. uuid is %s and username is %s" % (result.user_id, result.username))
+            return True
 
-    def insert_friend(self, ):
-        pass
+    def __friend_found(self, result, friend):
+        if result is None:
+            logging.debug("creating friend")
+            friend.save().addCallback(self.__done_save_friend)
+        else:
+            logging.debug("friend already existing. exiting")
+            return True
+
+    def __node_found(self, node, friend):
+        if node is None:
+            # nodo non trovato
+            logging.debug("Nodo sconosciuto")
+            return False
+        else:
+            Friend.find(where=['user_id=?'], limit=1).addCallback(self.__friend_found, friend)
+
+    def insert_friend(self, friend):
+        """Ritorna False se il nodo non è stato trovato"""
+        from twisted.internet import defer
+        self.d = defer.Deferred()
+        self.d = Known_node.find(where=['user_id=?', friend.user_id], limit=1).addCallback(self.__node_found, friend)
+        return self.d

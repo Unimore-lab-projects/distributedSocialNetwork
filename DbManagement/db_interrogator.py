@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from twistar.registry import Registry
 
-from tables import *
+from DbManagement.tables import *
 
 
 class DatabaseInterrogator:
@@ -40,9 +40,13 @@ class DatabaseInterrogator:
 
     def __done_friends(self, friends):
         """ritorna una lista di oggetti Friend"""
-        for friend in friends:
-            logging.debug("Friend: %s username %s " % (friend.user_id_known_nodes, friend.username))
-        return friends
+        if len(friends) == 0:
+            logging.debug("empty Friend list. so sad")
+            return None
+        else:
+            for friend in friends:
+                logging.debug("Friend: %s username %s " % (friend.user_id, friend.username))
+            return friends
 
     def get_friends(self):
         """ottiene tutti gli amici"""
@@ -55,10 +59,10 @@ class DatabaseInterrogator:
         logging.debug("Number of comments for post_id: %s : %s " % (comments[0].post_id, len(comments)))
         return comments
 
-    def get_post_comments(self, post_id):
+    def get_post_comments(self, post):
         """ottiene i commenti di un dato post id"""
         cmt = Comment
-        return cmt.find(where=['post_id = ?', post_id]).addCallback(self.__done_post_comments)
+        return cmt.find(where=['post_id = ?', post.post_id]).addCallback(self.__done_post_comments)
 
     # posts negli ultimi x giorni
 
@@ -71,3 +75,5 @@ class DatabaseInterrogator:
         d = datetime.today() - timedelta(days)
         pst = Post
         return pst.find(where=['post_id > ?', d]).addCallback(self.__done_latest_posts)
+
+    

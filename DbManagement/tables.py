@@ -16,8 +16,8 @@ class Friend(DBObject):
     pass
 
 
-Friend.validatesUniquenessOf('user_id_known_nodes')
-Friend.validatesPresenceOf('user_id_known_nodes')
+Friend.validatesUniquenessOf('user_id')
+Friend.validatesPresenceOf('user_id')
 Friend.validatesLengthOf('username', range=xrange(1, 16))
 
 
