@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-
 from twistar.registry import Registry
 
 from DbManagement.tables import *
