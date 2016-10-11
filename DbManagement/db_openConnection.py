@@ -23,3 +23,4 @@ def openConnectionOnDB(database,port,username,password,host):
 
     d=DatabaseInsertor(dbpool)
     d.insert_my_user(username)
+    return dbpool
