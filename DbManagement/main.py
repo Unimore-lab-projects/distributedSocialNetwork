@@ -13,17 +13,17 @@ def done(nodes):
     pass
 
 
-# logging necessario
-enable_logging()
-InteractionBase.LOG = True
-log.startLogging(sys.stdout)
-# end logging
+# # logging necessario
+# enable_logging()
+# InteractionBase.LOG = True
+# log.startLogging(sys.stdout)
+# # end logging
 
 # apre la connessione
 dbpool = open_connecton()
-
 # istanza per i metodi di inserimento nel db
 inser = DatabaseInsertor(dbpool)
+inser.insert_my_user("ilmiousername")
 
 # # esempio di inserimento di un nuovo nodo nel db con un uuid gia esistente e un timestamp piu vecchio di quello attuale
 # timest = datetime.today() - timedelta(minutes=15)

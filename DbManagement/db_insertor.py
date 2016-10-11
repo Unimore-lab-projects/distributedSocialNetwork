@@ -5,11 +5,18 @@ from uuid import uuid4
 from psycopg2 import extras
 from twisted.python import log
 from db_interrogator import *
+from twistar.dbconfig.base import InteractionBase
+from debug_messages import *
 
 
 class DatabaseInsertor:
     def __init__(self, dbpool):
         Registry.DBPOOL = dbpool
+        # logging necessario
+        enable_logging()
+        InteractionBase.LOG = True
+        log.startLogging(sys.stdout)
+        # end logging
 
     # INSERT USER
 
