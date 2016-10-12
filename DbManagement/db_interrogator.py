@@ -5,6 +5,14 @@ from twistar.registry import Registry
 from DbManagement.tables import *
 
 
+def get_my_user_id_callback(me):
+    return me.user_id
+
+
+def get_my_username_callback(me):
+    return me.username
+
+
 class DatabaseInterrogator:
     def __init__(self, dbpool):
         Registry.DBPOOL = dbpool

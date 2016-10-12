@@ -11,6 +11,7 @@ from debug_messages import *
 
 class DatabaseInsertor:
     def __init__(self, dbpool):
+        self.dbpool = dbpool
         Registry.DBPOOL = dbpool
         # logging necessario
         # enable_logging()
@@ -88,12 +89,6 @@ class DatabaseInsertor:
         for node in node_list:
             self.insert_node(node)
 
-    # INSERT A POST
-
-    def insert_post(self, post=None):
-        # TODO
-        pass
-
     # INSERT A FRIEND
     def __done_save_friend(self, result):
         if len(result.errors) > 0:
@@ -126,3 +121,58 @@ class DatabaseInsertor:
         self.d = defer.Deferred()
         self.d = Known_node.find(where=['user_id=?', friend.user_id], limit=1).addCallback(self.__node_found, friend)
         return self.d
+
+    # INSERT A POST
+
+    def __done_save_post(self, post):
+        if len(post.errors) > 0:
+            logging.error('%s errors adding a post:' % len(post.errors))
+            logging.error(post.errors)
+            return False
+        else:
+            logging.debug("post added. post_id is %s" % post.post_id)
+            return True
+
+    def __save_new_post(self, my_user, text_content, path_to_imagefile):
+        post = Post()
+        post.user_id = my_user.user_id
+        post.post_id = datetime.today()
+        post.text_content = text_content
+        post.path_to_imagefile = path_to_imagefile
+        return post.save().addCallback(self.__done_save_post)
+
+    def insert_post(self, post=None, text_content=None, path_to_imagefile=None):
+        if post is None:
+            if (text_content is None) & (path_to_imagefile is None):
+                logging.error("il post non può essere vuoto")
+                return False
+            else:
+                inter = DatabaseInterrogator(self.dbpool)
+                return inter.get_my_user().addCallback(self.__save_new_post, text_content, path_to_imagefile)
+        else:
+            return post.save().addCallback(self.__done_save_post)
+
+    # INSERT A COMMENT
+
+    def __done_save_comment(self, comment):
+        if len(comment.errors) > 0:
+            logging.error('%s errors adding a comment:' % len(comment.errors))
+            logging.error(comment.errors)
+            return False
+        else:
+            logging.debug("comment added. comment_id is %s" % comment.comment_id)
+            return True
+
+    def insert_comment(self, comment=None, content=None, user_id=None, post_id=None):
+        if comment is None:
+            if user_id is None | post_id is None:
+                logging.error("User id o Post id non possono essere vuoti")
+                return False
+            comment = Comment()
+            comment.comment_id = datetime.today()
+            comment.user_id = user_id
+            comment.post_id = post_id
+            comment.content = content
+        else:
+            comment.save().addCallback(self.__done_save_comment)
+        # TODO controllare che funzioni

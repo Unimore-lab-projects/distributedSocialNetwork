@@ -174,33 +174,6 @@ CREATE UNIQUE INDEX posts_id_uindex ON public.posts
 	)	WITH (FILLFACTOR = 90);
 -- ddl-end --
 
--- object: posts_user_id_uindex | type: INDEX --
--- DROP INDEX IF EXISTS public.posts_user_id_uindex CASCADE;
-CREATE UNIQUE INDEX posts_user_id_uindex ON public.posts
-	USING btree
-	(
-	  user_id
-	)	WITH (FILLFACTOR = 90);
--- ddl-end --
-
--- object: comments_user_id_uindex | type: INDEX --
--- DROP INDEX IF EXISTS public.comments_user_id_uindex CASCADE;
-CREATE UNIQUE INDEX comments_user_id_uindex ON public.comments
-	USING btree
-	(
-	  user_id
-	)	WITH (FILLFACTOR = 90);
--- ddl-end --
-
--- object: comments_post_id_uindex | type: INDEX --
--- DROP INDEX IF EXISTS public.comments_post_id_uindex CASCADE;
-CREATE UNIQUE INDEX comments_post_id_uindex ON public.comments
-	USING btree
-	(
-	  post_id
-	)	WITH (FILLFACTOR = 90);
--- ddl-end --
-
 -- object: public.friends | type: TABLE --
 -- DROP TABLE IF EXISTS public.friends CASCADE;
 CREATE TABLE public.friends(
@@ -217,13 +190,12 @@ ALTER TABLE public.friends OWNER TO postgres;
 -- object: public.posts | type: TABLE --
 -- DROP TABLE IF EXISTS public.posts CASCADE;
 CREATE TABLE public.posts(
-	post_id timestamp NOT NULL,
 	user_id uuid NOT NULL,
 	path_to_imagefile character varying(512),
 	text_content character varying(512),
 	id integer NOT NULL DEFAULT nextval('public.posts_id_seq'::regclass),
-	CONSTRAINT posts_post_id_pk UNIQUE (post_id),
-	CONSTRAINT posts_id_pk UNIQUE (id)
+	post_id bigint NOT NULL,
+	CONSTRAINT posts_id_pk PRIMARY KEY (id)
 
 );
 -- ddl-end --
@@ -233,16 +205,25 @@ ALTER TABLE public.posts OWNER TO postgres;
 -- object: public.comments | type: TABLE --
 -- DROP TABLE IF EXISTS public.comments CASCADE;
 CREATE TABLE public.comments(
-	comment_id timestamp NOT NULL,
 	content character varying(512),
 	user_id uuid NOT NULL,
 	id integer NOT NULL DEFAULT nextval('public.comments_id_seq'::regclass),
-	post_id timestamp NOT NULL,
+	comment_id bigint NOT NULL,
+	post_id bigint NOT NULL,
 	CONSTRAINT comments_id_pk PRIMARY KEY (id)
 
 );
 -- ddl-end --
 ALTER TABLE public.comments OWNER TO postgres;
+-- ddl-end --
+
+-- object: comments_comment_id_uindex | type: INDEX --
+-- DROP INDEX IF EXISTS public.comments_comment_id_uindex CASCADE;
+CREATE UNIQUE INDEX comments_comment_id_uindex ON public.comments
+	USING btree
+	(
+	  comment_id
+	)	WITH (FILLFACTOR = 90);
 -- ddl-end --
 
 -- object: friends_known_nodes_user_id_fk | type: CONSTRAINT --
