@@ -30,7 +30,11 @@ class DatabaseInterrogator:
         for node in nodes:
             logging.debug("Node: %s address: %s port %s last updated %s" % (
                 node.user_id, node.address, node.port, node.last_update))
+<<<<<<< Updated upstream
             nodesDict[node.user_id] = node
+=======
+	    nodesDict[node.user_id]=node
+>>>>>>> Stashed changes
         return nodesDict
 
     def get_known_nodes(self):
