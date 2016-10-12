@@ -5,14 +5,6 @@ from twistar.registry import Registry
 from DbManagement.tables import *
 
 
-def get_my_user_id_callback(me):
-    return me.user_id
-
-
-def get_my_username_callback(me):
-    return me.username
-
-
 class DatabaseInterrogator:
     def __init__(self, dbpool):
         Registry.DBPOOL = dbpool
@@ -34,11 +26,11 @@ class DatabaseInterrogator:
 
     def __done_all_nodes(self, nodes):
         """callback per get_known_nodes. Ritorna una lista di oggetti Known_node"""
-	nodesDict=dict()
+        nodesDict = dict()
         for node in nodes:
             logging.debug("Node: %s address: %s port %s last updated %s" % (
                 node.user_id, node.address, node.port, node.last_update))
-	    nodesDict[node.getUserId()]=node
+            nodesDict[node.user_id] = node
         return nodesDict
 
     def get_known_nodes(self):
@@ -84,5 +76,3 @@ class DatabaseInterrogator:
         d = datetime.today() - timedelta(days)
         pst = Post
         return pst.find(where=['post_id > ?', d]).addCallback(self.__done_latest_posts)
-
-    
