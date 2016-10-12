@@ -1,13 +1,8 @@
-from twisted.internet import reactor, defer
+from twisted.internet import reactor
 
+from  twistar.dbconfig.base import InteractionBase
 from db_insertor import *
 from db_openConnection import *
-
-
-# from db_openConnection import *
-def donedone(result):
-    print result
-
 
 # logging necessario
 enable_logging()
@@ -21,6 +16,30 @@ dbpool = open_connecton()
 # istanza per i metodi di inserimento nel db
 inser = DatabaseInsertor(dbpool)
 inter = DatabaseInterrogator(dbpool)
+
+
+# inter.get_friends().addCallback(fillFriendList)
+#
+# print "My posts:"
+# inter.get_latets_posts(3).addCallback(donedone)
+
+def printPostandComments(commentlist, post):
+    print post.text_content
+    for comment in commentlist:
+        print "     %s: %s" % (comment.username, comment.content)
+
+
+def printList(list):
+    for post in list:
+        inter.get_post_comments(post).addCallback(printPostandComments, post)
+
+
+#
+# def printComments(commentList):
+#     Friend.all().addCallback(printList)
+
+
+Post.all().addCallback(printList)
 # inser.insert_my_user("ilmiousername")
 # post = Post()
 # inter.get_my_user().addCallback(get_my_user_id_callback).addCallback(save_my_user)
@@ -28,10 +47,16 @@ inter = DatabaseInterrogator(dbpool)
 # post.text_content = "ciaociaociaociaociaociao"
 # post.post_id = datetime.today()
 # inser.insert_post(post).addCallback(donedone)
-inser.insert_post(None, "affanculo le callback", None).addCallback(donedone)
+# inser.insert_post(None, "affanculo le callback", None).addCallback(donedone)
+# comment = Comment()
+# comment.content = "ciai ragggione zio"
+# comment.user_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+# comment.comment_id = int(time.time())
+# comment.post_id = 1476291454
+#
+# inser.insert_comment(comment)
 
-# inser
-
+# inter.get_post_comments(None, 1476291454).addCallback(donedone)
 
 # # esempio di inserimento di un nuovo nodo nel db con un uuid gia esistente e un timestamp piu vecchio di quello attuale
 # timest = datetime.today() - timedelta(minutes=15)

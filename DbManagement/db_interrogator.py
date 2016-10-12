@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+
 from twistar.registry import Registry
 
 from DbManagement.tables import *
@@ -30,7 +31,7 @@ class DatabaseInterrogator:
         for node in nodes:
             logging.debug("Node: %s address: %s port %s last updated %s" % (
                 node.user_id, node.address, node.port, node.last_update))
-	    nodesDict[node.user_id]=node
+            nodesDict[node.user_id] = node
         return nodesDict
 
     def get_known_nodes(self):
@@ -65,7 +66,7 @@ class DatabaseInterrogator:
             logging.error("both arguments are None")
             return False
         if post is not None:
-                post_id = post.post_id
+            post_id = post.post_id
         """ottiene i commenti di un dato post id"""
         return Comment.find(where=['post_id = ?', post_id]).addCallback(self.__done_post_comments, post_id)
 
@@ -75,8 +76,7 @@ class DatabaseInterrogator:
         """ottiene la lista di post negli ultimi giorni"""
         delta = datetime.today() - timedelta(days)
         unix_time = delta.strftime("%s")
-        from twisted.python import log
-        return Post.find(where=['post_id > ?', unix_time])\
+        return Post.find(where=['post_id > ?', unix_time]) \
             # .addCallbacks(self.__done_latest_posts, log.err)
 
     # username del friend
@@ -86,3 +86,11 @@ class DatabaseInterrogator:
 
     def get_friend_username(self, user_id):
         return Friend.find(where=['user_id = ?', user_id], limit=1).addCallback(self.__done_username)
+
+
+    # get post and his comments
+
+    def get_post_and_comments(self, days=None):
+        pass
+
+

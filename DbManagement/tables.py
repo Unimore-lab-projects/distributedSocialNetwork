@@ -1,4 +1,5 @@
 from twistar.dbobject import DBObject
+from twistar.registry import Registry
 
 
 class Known_node(DBObject):
@@ -22,14 +23,17 @@ Friend.validatesLengthOf('username', range=xrange(1, 16))
 
 
 class Comment(DBObject):
-    pass
+    HASONE = [{'name': 'friend', 'class_name': 'Friend', 'key': 'user_id', 'foreign_key': 'user_id'}]
 
 
+Registry.register(Comment, Friend)
 Comment.validatesPresenceOf('comment_id')
 Comment.validatesPresenceOf('post_id')
 Comment.validatesPresenceOf('user_id')
 Comment.validatesUniquenessOf('comment_id')
 Comment.validatesLengthOf('content', range=xrange(0, 512))
+Comment.validatesLengthOf('username', range=xrange(1, 16))
+
 
 
 class Post(DBObject):

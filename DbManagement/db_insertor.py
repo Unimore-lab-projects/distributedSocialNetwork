@@ -19,6 +19,7 @@ class DatabaseInsertor:
         # log.startLogging(sys.stdout)
         # end logging
 
+
     # INSERT USER
 
     def __user_done(self, user):
@@ -177,7 +178,11 @@ class DatabaseInsertor:
             print "comment %s is not valid" % comment.comment_id
             return False
 
-    def insert_comment(self, comment):
+    def insert_comment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
+        if comment is None:
+            comment = Comment()
+
+
         comment.isValid().addCallback(self.__check_comment, comment)
         from twisted.internet import defer
         self.d = defer.Deferred()
