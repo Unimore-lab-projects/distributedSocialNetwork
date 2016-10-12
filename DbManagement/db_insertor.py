@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*
+import time
 from uuid import uuid4
 
 from psycopg2 import extras
-from twistar.dbconfig.base import InteractionBase
 from twisted.python import log
 
 from db_interrogator import *
@@ -136,7 +136,7 @@ class DatabaseInsertor:
     def __save_new_post(self, my_user, text_content, path_to_imagefile):
         post = Post()
         post.user_id = my_user.user_id
-        post.post_id = datetime.today()
+        post.post_id = int(time.time())
         post.text_content = text_content
         post.path_to_imagefile = path_to_imagefile
         return post.save().addCallback(self.__done_save_post)
@@ -163,16 +163,23 @@ class DatabaseInsertor:
             logging.debug("comment added. comment_id is %s" % comment.comment_id)
             return True
 
-    def insert_comment(self, comment=None, content=None, user_id=None, post_id=None):
-        if comment is None:
-            if user_id is None | post_id is None:
-                logging.error("User id o Post id non possono essere vuoti")
-                return False
-            comment = Comment()
-            comment.comment_id = datetime.today()
-            comment.user_id = user_id
-            comment.post_id = post_id
-            comment.content = content
+    def __post_found(self, post, comment):
+        if post is None:
+            # post non trovato
+            logging.debug("Post sconosciuto")
+            return False
         else:
-            comment.save().addCallback(self.__done_save_comment)
-        # TODO controllare che funzioni
+            logging.debug("Corresponding post found: %s" % post.post_id)
+            return comment.save().addCallback(self.__done_save_comment)
+
+    def __check_comment(self, result, comment):
+        if not result:
+            print "comment %s is not valid" % comment.comment_id
+            return False
+
+    def insert_comment(self, comment):
+        comment.isValid().addCallback(self.__check_comment, comment)
+        from twisted.internet import defer
+        self.d = defer.Deferred()
+        self.d = Post.find(where=['post_id=?', comment.post_id], limit=1).addCallback(self.__post_found, comment)
+        return self.d

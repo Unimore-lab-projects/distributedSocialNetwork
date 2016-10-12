@@ -55,24 +55,34 @@ class DatabaseInterrogator:
 
     # comments per post
 
-    def __done_post_comments(self, comments):
+    def __done_post_comments(self, comments, post_id):
         """ritorna un Deferred contenente la lista di commenti relativa ad un post id"""
-        logging.debug("Number of comments for post_id: %s : %s " % (comments[0].post_id, len(comments)))
+        logging.debug("Number of comments for post_id: %s : %s " % (post_id, len(comments)))
         return comments
 
-    def get_post_comments(self, post):
+    def get_post_comments(self, post=None, post_id=None):
+        if (post is None) & (post_id is None):
+            logging.error("both arguments are None")
+            return False
+        if post is not None:
+                post_id = post.post_id
         """ottiene i commenti di un dato post id"""
-        cmt = Comment
-        return cmt.find(where=['post_id = ?', post.post_id]).addCallback(self.__done_post_comments)
+        return Comment.find(where=['post_id = ?', post_id]).addCallback(self.__done_post_comments, post_id)
 
     # posts negli ultimi x giorni
 
-    def __done_latest_posts(self, posts):
-        """ritorna la lista di post"""
-        return posts
-
     def get_latets_posts(self, days):
         """ottiene la lista di post negli ultimi giorni"""
-        d = datetime.today() - timedelta(days)
-        pst = Post
-        return pst.find(where=['post_id > ?', d]).addCallback(self.__done_latest_posts)
+        delta = datetime.today() - timedelta(days)
+        unix_time = delta.strftime("%s")
+        from twisted.python import log
+        return Post.find(where=['post_id > ?', unix_time])\
+            # .addCallbacks(self.__done_latest_posts, log.err)
+
+    # username del friend
+
+    def __done_username(self, result):
+        return result.username
+
+    def get_friend_username(self, user_id):
+        return Friend.find(where=['user_id = ?', user_id], limit=1).addCallback(self.__done_username)

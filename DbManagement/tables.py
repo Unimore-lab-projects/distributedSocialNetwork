@@ -27,7 +27,7 @@ class Comment(DBObject):
 
 Comment.validatesPresenceOf('comment_id')
 Comment.validatesPresenceOf('post_id')
-Comment.validatesPresenceOf('user_lid')
+Comment.validatesPresenceOf('user_id')
 Comment.validatesUniquenessOf('comment_id')
 Comment.validatesLengthOf('content', range=xrange(0, 512))
 
