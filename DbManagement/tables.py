@@ -1,8 +1,9 @@
 from twistar.dbobject import DBObject
 from twistar.registry import Registry
 
+from twisted.spread import pb
 
-class Known_node(DBObject):
+class Known_node(DBObject,pb.Copyable):
     TABLENAME = "known_nodes"
 
 

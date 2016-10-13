@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from twistar.registry import Registry
 
-from DbManagement.tables import *
+from tables import *
 
 
 class DatabaseInterrogator:
