@@ -25,7 +25,7 @@ class nodeReceivedCopy(Known_node, pb.RemoteCopy):
 pb.setUnjellyableForClass(nodeSendCopy, nodeReceivedCopy)
 
 #attiva il logging
-def log():
+def start_logging():
     enable_logging()
     InteractionBase.LOG = True
     log.startLogging(sys.stdout)
@@ -48,8 +48,8 @@ def getDictFromFile(filename, separator):
 
 class peer(pb.Root):
     
-    def __init__(self, knownHostsFile, configFile):
-        log()
+    def __init__(self,configFile):
+        start_logging()
         
         #inizializzazione delle variabili d'istanza di Peer:
         #self.knownHosts=getDictFromFile(knownHostsFile, ',')
@@ -60,8 +60,8 @@ class peer(pb.Root):
         self.interrogator=DatabaseInterrogator(self.dbpool)
         #################################
         
-        #inserisco un record in my_user se la relazione è vuota
-        insertor.insert_my_user(self.config["peer_user"]) 
+        self.insertor.insert_my_user(self.config["peer_user"])
+        self.interrogator.get_my_user().addCallback('__loadMyUser')
         ################################
         
         reactor.listenTCP(self.config["peer_port"], pb.PBServerFactory(self))
@@ -69,14 +69,23 @@ class peer(pb.Root):
         
         
         #query per popolare la tabella dei known nodes
-        self.interrogator.get_known_nodes().addCallback('queryKnownHosts', dict())
+        self.interrogator.get_known_nodes().addCallback('__queryKnownHosts', dict())
         #self.queryKnownHosts(self.knownHosts, dict())
-        
-    def remote_getKnownHosts(self, uid, address, port):
-        print("connessione in ingresso, indirizzo: "+address+" porta: "+port)
-        if not self.knownHosts.has_key(uid):
-            self.knownHosts[uid]=address+":"+port
-        return self.knownHosts
+    
+    def __loadMyUser(self, myUser):
+        self.myUser=myUser
+    
+    
+#    def remote_getKnownHosts(self, uid, address, port):
+#        print("connessione in ingresso, indirizzo: "+address+" porta: "+port)
+#        if not self.knownHosts.has_key(uid):
+#            self.knownHosts[uid]=address+":"+port
+#        return self.knownHosts
+
+    def remote_getKnownHosts(self, node):
+        print("connessione in ingresso, indirizzo: "+node.address+" porta: "+node.port)
+        self.insertor.insert_node(node)
+        return self.interrogator.get_known_nodes()
     
     
     def peerConnection(self, ipAddress, remotePortNumber):
@@ -85,37 +94,60 @@ class peer(pb.Root):
         return clientFactory.getRootObject()
     
     
-    def queryKnownHosts(self, hosts, visitedHosts):
-        
+#    def queryKnownHosts(self, hosts, visitedHosts):
+#        
+#        notVisitedHosts=dict()
+#        
+#        for i in hosts:
+#            if((not visitedHosts.has_key(i))and(not i==self.uid)) :
+#                visitedHosts[i]=hosts[i]
+#                notVisitedHosts[i]=hosts[i]
+#                self.knownHosts[i]=hosts[i]
+#        
+#        for i in notVisitedHosts:
+#            value=notVisitedHosts[i].split(':')
+#            address=value[0]
+#            port=value[1]
+#            deferredObject=self.peerConnection(address, int(port))
+#            deferredObject.addCallback(self.getHostsList, i, visitedHosts)
+#            print("visiting "+str(i))
+#        
+#    def getHostsList(self, rootObject, hostUid,  visitedHosts):
+#        print("ottenuto oggetto remoto"+str(hostUid))
+#        remoteKnownHosts=rootObject.callRemote("getKnownHosts", self.uid, self.address, self.port)
+#        remoteKnownHosts.addCallback(self.queryKnownHosts, visitedHosts)
+    
+    def __queryKnownHosts(self, hostsDict, visitedHostsDict):
         notVisitedHosts=dict()
         
         for i in hosts:
-            if((not visitedHosts.has_key(i))and(not i==self.uid)) :
+            if((not visitedHosts.has_key(i))and(not i==self.myUser.user_id)) :
                 visitedHosts[i]=hosts[i]
                 notVisitedHosts[i]=hosts[i]
                 self.knownHosts[i]=hosts[i]
         
         for i in notVisitedHosts:
-            value=notVisitedHosts[i].split(':')
-            address=value[0]
-            port=value[1]
-            deferredObject=self.peerConnection(address, int(port))
+            deferredObject=self.peerConnection(notVisitedHosts[i].address, int(notVisitedHosts[i].port))
             deferredObject.addCallback(self.getHostsList, i, visitedHosts)
             print("visiting "+str(i))
         
-    def getHostsList(self, rootObject, hostUid,  visitedHosts):
+        pass
+
+    def __getHostsList(self):
         print("ottenuto oggetto remoto"+str(hostUid))
-        remoteKnownHosts=rootObject.callRemote("getKnownHosts", self.uid, self.address, self.port)
+        node=nodeSendCopy()
+        node.user_id=self.myUser.user_id
+        node.username=self.myUser.username
+        node.address=self.config["peer_address"]
+        node.port=self.config["peer_port"]
+        remoteKnownHosts=rootObject.callRemote("getKnownHosts", self.myUser.user_id, node)
         remoteKnownHosts.addCallback(self.queryKnownHosts, visitedHosts)
-    
-    def queryKnownHostsErrback(self, obj):
-        print("host non raggiungibile")
-
-        
-        
-
+        pass
+  
+  
+  
 #sintassi: pyton p2p.py uid address port filename
-p=peer(int(sys.argv[3]), sys.argv[4], sys.argv[1], sys.argv[2], sys.argv[3])
+p=peer(sys.argv[1])
 reactor.run()
 
 
