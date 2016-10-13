@@ -16,6 +16,14 @@ from distributedSocialNetwork.DbManagement.tables import *
 
 import sys
 
+class nodeSendCopy(Known_node, pb.Copyable):
+    pass
+
+class nodeReceivedCopy(Known_node, pb.RemoteCopy):
+    pass
+
+pb.setUnjellyableForClass(nodeSendCopy, nodeReceivedCopy)
+
 #attiva il logging
 def log():
     enable_logging()
@@ -56,13 +64,12 @@ class peer(pb.Root):
         insertor.insert_my_user(self.config["peer_user"]) 
         ################################
         
-        ######
         reactor.listenTCP(self.config["peer_port"], pb.PBServerFactory(self))
         print("listening on port "+str(self.config["peer_port"]))
-        ######
         
-        #query ai known nodes
-        self.interrogator.get_known_nodes().addCallback()
+        
+        #query per popolare la tabella dei known nodes
+        self.interrogator.get_known_nodes().addCallback('queryKnownHosts', dict())
         #self.queryKnownHosts(self.knownHosts, dict())
         
     def remote_getKnownHosts(self, uid, address, port):
