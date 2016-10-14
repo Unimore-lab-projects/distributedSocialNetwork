@@ -4,8 +4,6 @@
 -- Project Site: pgmodeler.com.br
 -- Model Author: ---
 
-
-
 -- Database creation must be done outside an multicommand file.
 -- These commands were put in this file only for convenience.
 -- -- object: mydatabase | type: DATABASE --
