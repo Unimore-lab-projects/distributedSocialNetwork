@@ -85,6 +85,7 @@ class DatabaseInterrogator:
 
     # username del friend
 
+
     def __done_username(self, result):
         return result.username
 
