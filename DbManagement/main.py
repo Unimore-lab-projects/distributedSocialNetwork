@@ -4,10 +4,10 @@ from  twistar.dbconfig.base import InteractionBase
 from db_insertor import *
 from db_openConnection import *
 
-# logging necessario
-enable_logging()
-InteractionBase.LOG = True
-log.startLogging(sys.stdout)
+# # logging necessario
+# enable_logging()
+# InteractionBase.LOG = True
+# log.startLogging(sys.stdout)
 # end logging
 
 
@@ -17,29 +17,43 @@ dbpool = open_connecton()
 inser = DatabaseInsertor(dbpool)
 inter = DatabaseInterrogator(dbpool)
 
+from twisted.enterprise import adbapi
+from twistar.registry import Registry
+Registry.DBPOOL = dbpool
+
+
+def done(result):
+    for obj in result:
+        print obj.post
+
+inter.get_post_and_comments(5).addCallback(done)
+# Registry.DBPOOL.runQuery("SELECT * FROM comments, friends WHERE comments.user_id = friends.user_id").addCallback(done)
+
+
 
 # inter.get_friends().addCallback(fillFriendList)
 #
 # print "My posts:"
 # inter.get_latets_posts(3).addCallback(donedone)
 
-def printPostandComments(commentlist, post):
-    print post.text_content
-    for comment in commentlist:
-        print "     %s: %s" % (comment.username, comment.content)
-
-
-def printList(list):
-    for post in list:
-        inter.get_post_comments(post).addCallback(printPostandComments, post)
-
-
+# def printPostandComments(commentlist, post):
+#     print post.text_content
+#     for comment in commentlist:
+#         print "     %s: %s" % (comment.username, comment.content)
 #
+#
+# def printList(list):
+#     for post in list:
+#         inter.get_post_comments(post).addCallback(printPostandComments, post)
+#
+#
+# #
 # def printComments(commentList):
 #     Friend.all().addCallback(printList)
 
 
-Post.all().addCallback(printList)
+
+
 # inser.insert_my_user("ilmiousername")
 # post = Post()
 # inter.get_my_user().addCallback(get_my_user_id_callback).addCallback(save_my_user)

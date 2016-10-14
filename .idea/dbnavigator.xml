@@ -24,26 +24,18 @@
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
     <loaded-nodes>
-      <connection connection-id="76ab285e-d9db-4578-8ff8-f7253041e029">
+      <connection connection-id="220a35f0-f340-4a56-a335-831a96a32093">
         <schema name="public" object-types="column, constraint, function, index, sequence, table, dataset trigger, view" />
       </connection>
     </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="76ab285e-d9db-4578-8ff8-f7253041e029">
+    <connection id="220a35f0-f340-4a56-a335-831a96a32093">
       <console name="mydatabase" type="STANDARD" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.comments" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.known_nodes" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.posts" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.friends" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.my_user" active-filter-id="EMPTY_FILTER">
-      <filter id="212aaf6c-b185-4bc3-88ef-1ea3f68e6f63" name="Filter 1" temporary="false" custom-name="false" type="basic" join-type="AND">
-        <condition column="user_id" operator="=" value="" active="true" />
-      </filter>
-    </filter-list>
+    <filter-list connection-id="220a35f0-f340-4a56-a335-831a96a32093" dataset="public.comments" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -71,7 +63,7 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="76ab285e-d9db-4578-8ff8-f7253041e029" active="true">
+      <connection id="220a35f0-f340-4a56-a335-831a96a32093" active="true">
         <database>
           <name value="mydatabase" />
           <description value="" />

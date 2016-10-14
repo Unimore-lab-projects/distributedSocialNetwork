@@ -1,7 +1,6 @@
 import logging
+from collections import namedtuple
 from datetime import datetime, timedelta
-
-from twistar.registry import Registry
 
 from tables import *
 
@@ -37,6 +36,11 @@ class DatabaseInterrogator:
     def get_known_nodes(self):
         """Ottiene la lista dei known nodes dal database"""
         return Known_node().all().addCallback(self.__done_all_nodes)
+
+    # get a single node from uuid
+
+    def get_node(self, user_id):
+        return Known_node().find(where=['user_id = ?', user_id], limit=1)
 
     # friends
 
@@ -87,10 +91,35 @@ class DatabaseInterrogator:
     def get_friend_username(self, user_id):
         return Friend.find(where=['user_id = ?', user_id], limit=1).addCallback(self.__done_username)
 
-
     # get post and his comments
 
+    def __get_comments(self, comments, p, packList):
+        p.setComments(comments)
+        packList.append(p)
+
+    def __cycle_results(self, posts):
+        packList=[]
+        if len(posts) >= 1:
+            for post in posts:
+                p = PostPackage(post, None)
+                self.get_post_comments(post).addCallback(self.__get_comments, p, packList)
+                logging.debug("package: %s" % p)
+        return packList
+
     def get_post_and_comments(self, days=None):
-        pass
+        if days is None:
+            return Post.all().addCallback(self.__cycle_results)
+        else:
+            return self.get_latets_posts(days).addCallback(self.__cycle_results)
 
 
+class PostPackage():
+    def __init__(self, post=None, commentList=None):
+        self.post = post
+        self.commentList = commentList
+
+    def setPost(self,post):
+        self.post = post
+
+    def setComments(self, commentList):
+        self.commentList = commentList
