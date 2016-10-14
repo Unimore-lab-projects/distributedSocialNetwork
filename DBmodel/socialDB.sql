@@ -4,35 +4,6 @@
 -- Project Site: pgmodeler.com.br
 -- Model Author: ---
 
--- object: archeffect | type: ROLE --
--- DROP ROLE IF EXISTS archeffect;
-CREATE ROLE archeffect WITH 
-	SUPERUSER
-	CREATEDB
-	CREATEROLE
-	INHERIT
-	LOGIN
-	ENCRYPTED PASSWORD '********';
--- ddl-end --
-
--- object: utente | type: ROLE --
--- DROP ROLE IF EXISTS utente;
-CREATE ROLE utente WITH 
-	INHERIT
-	LOGIN
-	ENCRYPTED PASSWORD '********';
--- ddl-end --
-
--- object: jamaica | type: ROLE --
--- DROP ROLE IF EXISTS jamaica;
-CREATE ROLE jamaica WITH 
-	SUPERUSER
-	CREATEDB
-	CREATEROLE
-	INHERIT
-	LOGIN
-	ENCRYPTED PASSWORD '********';
--- ddl-end --
 
 
 -- Database creation must be done outside an multicommand file.
