@@ -99,7 +99,7 @@ class DatabaseInterrogator:
         packList.append(p)
 
     def __cycle_results(self, posts):
-        packList=[]
+        packList = []
         if len(posts) >= 1:
             for post in posts:
                 p = PostPackage(post, None)
@@ -119,7 +119,7 @@ class PostPackage():
         self.post = post
         self.commentList = commentList
 
-    def setPost(self,post):
+    def setPost(self, post):
         self.post = post
 
     def setComments(self, commentList):
