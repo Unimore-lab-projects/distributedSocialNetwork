@@ -7,14 +7,14 @@
 -- Database creation must be done outside an multicommand file.
 -- These commands were put in this file only for convenience.
 -- -- object: mydatabase | type: DATABASE --
--- -- DROP DATABASE IF EXISTS mydatabase;
--- CREATE DATABASE mydatabase
--- 	ENCODING = 'UTF8'
--- 	LC_COLLATE = 'it_IT.UTF8'
--- 	LC_CTYPE = 'it_IT.UTF8'
--- 	TABLESPACE = pg_default
+ DROP DATABASE IF EXISTS mydatabase;
+ CREATE DATABASE mydatabase
+ 	ENCODING = 'UTF8'
+ 	LC_COLLATE = 'it_IT.UTF8'
+ 	LC_CTYPE = 'it_IT.UTF8'
+ 	TABLESPACE = pg_default
 -- 	OWNER = archeffect
--- ;
+ ;
 -- -- ddl-end --
 -- 
 
