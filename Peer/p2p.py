@@ -16,13 +16,10 @@ from distributedSocialNetwork.DbManagement.tables import *
 
 import sys
 
-class nodeSendCopy(Known_node, pb.Copyable):
-    pass
-
 class nodeReceivedCopy(Known_node, pb.RemoteCopy):
     pass
 
-pb.setUnjellyableForClass(nodeSendCopy, nodeReceivedCopy)
+pb.setUnjellyableForClass(Known_node, nodeReceivedCopy)
 
 #attiva il logging
 def start_logging():
@@ -54,7 +51,6 @@ class peer(pb.Root):
         start_logging()
         
         #inizializzazione delle variabili d'istanza di Peer:
-        #self.knownHosts=getDictFromFile(knownHostsFile, ',')
         self.config=getDictFromFile(configFile, '=')
         self.dbpool=openConnectionOnDB(self.config["db_name"],self.config["db_port"],self.config["db_user"],
         self.config["db_password"],self.config["db_address"])
@@ -68,22 +64,7 @@ class peer(pb.Root):
         
         reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
         print("listening on port "+str(self.config["peer_port"]))
-        
-        
-        #query per popolare la tabella dei known nodes
-        self.interrogator.get_known_nodes().addCallback(self._queryKnownHosts, dict())
-        #self.queryKnownHosts(self.knownHosts, dict())
     
-    def _loadMyUser(self, myUser):
-        self.myUser=myUser
-    
-    
-#    def remote_getKnownHosts(self, uid, address, port):
-#        print("connessione in ingresso, indirizzo: "+address+" porta: "+port)
-#        if not self.knownHosts.has_key(uid):
-#            self.knownHosts[uid]=address+":"+port
-#        return self.knownHosts
-
     def remote_getKnownHosts(self, node):
         print("connessione in ingresso, indirizzo: "+node.address+" porta: "+node.port)
         self.insertor.insert_node(node)
@@ -96,28 +77,11 @@ class peer(pb.Root):
         return clientFactory.getRootObject()
     
     
-#    def queryKnownHosts(self, hosts, visitedHosts):
-#        
-#        notVisitedHosts=dict()
-#        
-#        for i in hosts:
-#            if((not visitedHosts.has_key(i))and(not i==self.uid)) :
-#                visitedHosts[i]=hosts[i]
-#                notVisitedHosts[i]=hosts[i]
-#                self.knownHosts[i]=hosts[i]
-#        
-#        for i in notVisitedHosts:
-#            value=notVisitedHosts[i].split(':')
-#            address=value[0]
-#            port=value[1]
-#            deferredObject=self.peerConnection(address, int(port))
-#            deferredObject.addCallback(self.getHostsList, i, visitedHosts)
-#            print("visiting "+str(i))
-#        
-#    def getHostsList(self, rootObject, hostUid,  visitedHosts):
-#        print("ottenuto oggetto remoto"+str(hostUid))
-#        remoteKnownHosts=rootObject.callRemote("getKnownHosts", self.uid, self.address, self.port)
-#        remoteKnownHosts.addCallback(self.queryKnownHosts, visitedHosts)
+    def _loadMyUser(self, myUser):
+        self.myUser=myUser
+        print("myUser: "+myUser.username+" "+myUser.user_id)
+        self.interrogator.get_known_nodes().addCallback(self._queryKnownHosts, dict())
+    
     
     def _queryKnownHosts(self, hostsDict, visitedHostsDict):
         notVisitedHostsDict=dict()
@@ -126,24 +90,27 @@ class peer(pb.Root):
             if((not visitedHostsDict.has_key(i))and(not i==self.myUser.user_id)) :
                 visitedHostsDict[i]=hostsDict[i]
                 notVisitedHostsDict[i]=hostsDict[i]
-                #insertor.insert_node(hostsDict[i])
+                self.insertor.insert_node(hostsDict[i])
         
-        for i in notVisitedHosts:
-            deferredObject=self.peerConnection(notVisitedHostsDict[i].address, int(notVisitedHostsDict[i].port))
+        for i in notVisitedHostsDict:
+            address=notVisitedHostsDict[i].address
+            address=address.split("/")
+            deferredObject=self.peerConnection(address[0], int(notVisitedHostsDict[i].port))
             deferredObject.addCallback(self._getHostsList, i, visitedHostsDict)
             print("visiting "+str(i))
         
         pass
 
-    def _getHostsList(self, hostUuid, visitedHostsDict):
+    def _getHostsList(self, rootObject, hostUuid, visitedHostsDict):
         print("ottenuto oggetto remoto"+str(hostUuid))
-        node=nodeSendCopy()
+        node=Known_node()
         node.user_id=self.myUser.user_id
         node.username=self.myUser.username
         node.address=self.config["peer_address"]
         node.port=self.config["peer_port"]
-        remoteKnownHosts=rootObject.callRemote("getKnownHosts", self.myUser.user_id, node)
-        remoteKnownHosts.addCallback(self._queryKnownHosts, visitedHosts)
+        node.last_update=datetime.today()
+        remoteKnownHostsDeferred=rootObject.callRemote("getKnownHosts", node)
+        remoteKnownHostsDeferred.addCallback(self._queryKnownHosts, visitedHostsDict)
         pass
   
   
