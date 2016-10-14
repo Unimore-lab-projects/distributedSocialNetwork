@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*
-from datetime import datetime
+import time
 from uuid import uuid4
 
 from psycopg2 import extras
 from twisted.python import log
+
 from db_interrogator import *
-from twistar.dbconfig.base import InteractionBase
 from debug_messages import *
 
 
 class DatabaseInsertor:
     def __init__(self, dbpool):
+        self.dbpool = dbpool
         Registry.DBPOOL = dbpool
         # logging necessario
-        enable_logging()
-        InteractionBase.LOG = True
-        log.startLogging(sys.stdout)
+        # enable_logging()
+        # InteractionBase.LOG = True
+        # log.startLogging(sys.stdout)
         # end logging
+
 
     # INSERT USER
 
@@ -88,14 +90,101 @@ class DatabaseInsertor:
         for node in node_list:
             self.insert_node(node)
 
+    # INSERT A FRIEND
+    def __done_save_friend(self, result):
+        if len(result.errors) > 0:
+            logging.error('%s errors adding a friend:' % len(result.errors))
+            logging.error(result.errors)
+            return False
+        else:
+            logging.debug("friend added. uuid is %s and username is %s" % (result.user_id, result.username))
+            return True
+
+    def __friend_found(self, result, friend):
+        if result is None:
+            logging.debug("creating friend")
+            friend.save().addCallback(self.__done_save_friend)
+        else:
+            logging.debug("friend already existing. exiting")
+            return True
+
+    def __node_found(self, node, friend):
+        if node is None:
+            # nodo non trovato
+            logging.debug("Nodo sconosciuto")
+            return False
+        else:
+            Friend.find(where=['user_id=?'], limit=1).addCallback(self.__friend_found, friend)
+
+    def insert_friend(self, friend):
+        """Ritorna False se il nodo non è stato trovato"""
+        from twisted.internet import defer
+        self.d = defer.Deferred()
+        self.d = Known_node.find(where=['user_id=?', friend.user_id], limit=1).addCallback(self.__node_found, friend)
+        return self.d
+
     # INSERT A POST
 
-    def insert_post(self, post=None):
-        # TODO
-        pass
+    def __done_save_post(self, post):
+        if len(post.errors) > 0:
+            logging.error('%s errors adding a post:' % len(post.errors))
+            logging.error(post.errors)
+            return False
+        else:
+            logging.debug("post added. post_id is %s" % post.post_id)
+            return True
+
+    def __save_new_post(self, my_user, text_content, path_to_imagefile):
+        post = Post()
+        post.user_id = my_user.user_id
+        post.post_id = int(time.time())
+        post.text_content = text_content
+        post.path_to_imagefile = path_to_imagefile
+        return post.save().addCallback(self.__done_save_post)
+
+    def insert_post(self, post=None, text_content=None, path_to_imagefile=None):
+        if post is None:
+            if (text_content is None) & (path_to_imagefile is None):
+                logging.error("il post non può essere vuoto")
+                return False
+            else:
+                inter = DatabaseInterrogator(self.dbpool)
+                return inter.get_my_user().addCallback(self.__save_new_post, text_content, path_to_imagefile)
+        else:
+            return post.save().addCallback(self.__done_save_post)
+
+    # INSERT A COMMENT
+
+    def __done_save_comment(self, comment):
+        if len(comment.errors) > 0:
+            logging.error('%s errors adding a comment:' % len(comment.errors))
+            logging.error(comment.errors)
+            return False
+        else:
+            logging.debug("comment added. comment_id is %s" % comment.comment_id)
+            return True
+
+    def __post_found(self, post, comment):
+        if post is None:
+            # post non trovato
+            logging.debug("Post sconosciuto")
+            return False
+        else:
+            logging.debug("Corresponding post found: %s" % post.post_id)
+            return comment.save().addCallback(self.__done_save_comment)
+
+    def __check_comment(self, result, comment):
+        if not result:
+            print "comment %s is not valid" % comment.comment_id
+            return False
+
+    def insert_comment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
+        if comment is None:
+            comment = Comment()
 
 
-    # INSERT A FRIEND
-
-    def insert_friend(self, ):
-        pass
+        comment.isValid().addCallback(self.__check_comment, comment)
+        from twisted.internet import defer
+        self.d = defer.Deferred()
+        self.d = Post.find(where=['post_id=?', comment.post_id], limit=1).addCallback(self.__post_found, comment)
+        return self.d

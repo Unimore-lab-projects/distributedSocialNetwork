@@ -12,7 +12,7 @@ def open_connecton():
     return dbpool
 
 
-from DbManagement.db_insertor import *
+from db_insertor import *
 
 
 def openConnectionOnDB(database,port,username,password,host):
@@ -21,5 +21,4 @@ def openConnectionOnDB(database,port,username,password,host):
     print(args)
     dbpool = adbapi.ConnectionPool("psycopg2",arg_string)
 
-    d=DatabaseInsertor(dbpool)
-    d.insert_my_user(username)
+    return dbpool

@@ -1,7 +1,9 @@
 from twistar.dbobject import DBObject
+from twistar.registry import Registry
 
+from twisted.spread import pb
 
-class Known_node(DBObject):
+class Known_node(DBObject,pb.Copyable):
     TABLENAME = "known_nodes"
 
 
@@ -16,20 +18,23 @@ class Friend(DBObject):
     pass
 
 
-Friend.validatesUniquenessOf('user_id_known_nodes')
-Friend.validatesPresenceOf('user_id_known_nodes')
+Friend.validatesUniquenessOf('user_id')
+Friend.validatesPresenceOf('user_id')
 Friend.validatesLengthOf('username', range=xrange(1, 16))
 
 
 class Comment(DBObject):
-    pass
+    HASONE = [{'name': 'friend', 'class_name': 'Friend', 'key': 'user_id', 'foreign_key': 'user_id'}]
 
 
+Registry.register(Comment, Friend)
 Comment.validatesPresenceOf('comment_id')
 Comment.validatesPresenceOf('post_id')
-Comment.validatesPresenceOf('user_lid')
+Comment.validatesPresenceOf('user_id')
 Comment.validatesUniquenessOf('comment_id')
 Comment.validatesLengthOf('content', range=xrange(0, 512))
+Comment.validatesLengthOf('username', range=xrange(1, 16))
+
 
 
 class Post(DBObject):
