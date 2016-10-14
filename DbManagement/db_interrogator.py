@@ -96,6 +96,8 @@ class DatabaseInterrogator:
 
     def __get_comments(self, comments, p, packList):
         p.setComments(comments)
+        logging.debug("Pack elemt post: %s" % p.getPost() )
+        logging.debug("     Pack elemt comments: %s" % p.getComments() )
         packList.append(p)
 
     def __cycle_results(self, posts):
@@ -104,7 +106,7 @@ class DatabaseInterrogator:
             for post in posts:
                 p = PostPackage(post, None)
                 self.get_post_comments(post).addCallback(self.__get_comments, p, packList)
-                logging.debug("package: %s" % p)
+                logging.debug("package entry: %s" % p)
         return packList
 
     def get_post_and_comments(self, days=None):
@@ -124,3 +126,9 @@ class PostPackage():
 
     def setComments(self, commentList):
         self.commentList = commentList
+
+    def getPost(self):
+        return self.post
+
+    def getComments(self):
+        return self.commentList
