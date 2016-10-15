@@ -182,8 +182,8 @@ class MyWidget(FloatLayout):
         #btn2.on_press=self.btn2_pressed
         self.add_widget(btn2)
 
-        #self.add_widget(PostImage("magic.jpg"))
-        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        self.add_widget(PostImage("magic.jpg"))
+        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
 
     def btn2_pressed(self):
         self.add_widget(Label(text="ok"))
