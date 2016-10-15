@@ -24,26 +24,26 @@
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
     <loaded-nodes>
-      <connection connection-id="76ab285e-d9db-4578-8ff8-f7253041e029">
+      <connection connection-id="220a35f0-f340-4a56-a335-831a96a32093">
+        <schema name="pg_catalog" object-types="table, view" />
         <schema name="public" object-types="column, constraint, function, index, sequence, table, dataset trigger, view" />
+      </connection>
+      <connection connection-id="0d1ed002-db82-4556-869a-5c4f00d3c12c">
+        <schema name="pg_catalog" object-types="function, table, view" />
+        <schema name="public" object-types="column, function, table, view" />
       </connection>
     </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="76ab285e-d9db-4578-8ff8-f7253041e029">
+    <connection id="220a35f0-f340-4a56-a335-831a96a32093">
       <console name="mydatabase" type="STANDARD" />
+    </connection>
+    <connection id="0d1ed002-db82-4556-869a-5c4f00d3c12c">
+      <console name="Connection" type="STANDARD" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.comments" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.known_nodes" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.posts" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.friends" active-filter-id="EMPTY_FILTER" />
-    <filter-list connection-id="76ab285e-d9db-4578-8ff8-f7253041e029" dataset="public.my_user" active-filter-id="EMPTY_FILTER">
-      <filter id="212aaf6c-b185-4bc3-88ef-1ea3f68e6f63" name="Filter 1" temporary="false" custom-name="false" type="basic" join-type="AND">
-        <condition column="user_id" operator="=" value="" active="true" />
-      </filter>
-    </filter-list>
+    <filter-list connection-id="220a35f0-f340-4a56-a335-831a96a32093" dataset="public.comments" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -71,7 +71,7 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="76ab285e-d9db-4578-8ff8-f7253041e029" active="true">
+      <connection id="220a35f0-f340-4a56-a335-831a96a32093" active="true">
         <database>
           <name value="mydatabase" />
           <description value="" />
@@ -85,6 +85,80 @@
           <host value="localhost" />
           <port value="5432" />
           <database value="mydatabase" />
+          <os-authentication value="false" />
+          <empty-password value="true" />
+          <user value="archeffect" />
+          <password value="" />
+        </database>
+        <properties>
+          <auto-commit value="false" />
+        </properties>
+        <ssh-settings>
+          <active value="false" />
+          <proxy-host value="" />
+          <proxy-port value="22" />
+          <proxy-user value="" />
+          <proxy-password value="" />
+          <auth-type value="PASSWORD" />
+          <key-file value="" />
+          <key-passphrase value="" />
+        </ssh-settings>
+        <details>
+          <charset value="UTF-8" />
+          <ddl-file-binding value="true" />
+          <database-logging value="true" />
+          <environment-type value="default" />
+          <idle-time-to-disconnect value="30" />
+          <password-expiry-time value="10" />
+          <max-connection-pool-size value="7" />
+          <alternative-statement-delimiter value="" />
+          <connect-automatically value="true" />
+        </details>
+        <object-filters hide-empty-schemas="false">
+          <object-type-filter use-master-settings="true">
+            <object-type name="SCHEMA" enabled="true" />
+            <object-type name="USER" enabled="true" />
+            <object-type name="ROLE" enabled="true" />
+            <object-type name="PRIVILEGE" enabled="true" />
+            <object-type name="CHARSET" enabled="true" />
+            <object-type name="TABLE" enabled="true" />
+            <object-type name="VIEW" enabled="true" />
+            <object-type name="MATERIALIZED_VIEW" enabled="true" />
+            <object-type name="NESTED_TABLE" enabled="true" />
+            <object-type name="COLUMN" enabled="true" />
+            <object-type name="INDEX" enabled="true" />
+            <object-type name="CONSTRAINT" enabled="true" />
+            <object-type name="DATASET_TRIGGER" enabled="true" />
+            <object-type name="DATABASE_TRIGGER" enabled="true" />
+            <object-type name="SYNONYM" enabled="true" />
+            <object-type name="SEQUENCE" enabled="true" />
+            <object-type name="PROCEDURE" enabled="true" />
+            <object-type name="FUNCTION" enabled="true" />
+            <object-type name="PACKAGE" enabled="true" />
+            <object-type name="TYPE" enabled="true" />
+            <object-type name="TYPE_ATTRIBUTE" enabled="true" />
+            <object-type name="ARGUMENT" enabled="true" />
+            <object-type name="DIMENSION" enabled="true" />
+            <object-type name="CLUSTER" enabled="true" />
+            <object-type name="DBLINK" enabled="true" />
+          </object-type-filter>
+          <object-name-filters />
+        </object-filters>
+      </connection>
+      <connection id="0d1ed002-db82-4556-869a-5c4f00d3c12c" active="true">
+        <database>
+          <name value="Connection" />
+          <description value="" />
+          <database-type value="POSTGRES" />
+          <config-type value="BASIC" />
+          <database-version value="9.5" />
+          <driver-source value="BUILTIN" />
+          <driver-library value="" />
+          <driver value="" />
+          <url-type value="DATABASE" />
+          <host value="localhost" />
+          <port value="5432" />
+          <database value="postgres" />
           <os-authentication value="false" />
           <empty-password value="true" />
           <user value="archeffect" />

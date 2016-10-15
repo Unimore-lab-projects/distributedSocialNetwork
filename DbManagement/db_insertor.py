@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*
 import time
 from uuid import uuid4
-
 from psycopg2 import extras
 from twisted.python import log
-
 from db_interrogator import *
 from debug_messages import *
+from twisted.internet import defer
 
 
 class DatabaseInsertor:
@@ -18,7 +17,6 @@ class DatabaseInsertor:
         # InteractionBase.LOG = True
         # log.startLogging(sys.stdout)
         # end logging
-
 
     # INSERT USER
 
@@ -181,10 +179,13 @@ class DatabaseInsertor:
     def insert_comment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
         if comment is None:
             comment = Comment()
-
+            comment.post_id = post_id
+            comment.user_id = user_id
+            comment.username = username
+            comment.content = content
 
         comment.isValid().addCallback(self.__check_comment, comment)
-        from twisted.internet import defer
+
         self.d = defer.Deferred()
         self.d = Post.find(where=['post_id=?', comment.post_id], limit=1).addCallback(self.__post_found, comment)
         return self.d
