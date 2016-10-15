@@ -7,7 +7,10 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
-
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.app import runTouchApp
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
 
 kv = """
 <MyWidget>:
@@ -71,16 +74,20 @@ class PostImage(FloatLayout):
 
         #bottone per i like
         self.add_widget(MyImage(name_img))
-        btn= Button(text="Like", size_hint=(0.04, 0.046), pos_hint={'x': 0.370, 'top': 0.450}, font_size='12sp', on_press=self.btn_pressed)
+        btn = ImageButton('heartblue.png')
+        btn.size_hint = (0.022, 0.032)
+        btn.pos_hint = {'x': 0.365, 'top': 0.440}
+        btn.on_press = self.btn_pressed
         self.add_widget(btn)
+
 
         #counter per i like
         self.count=0
-        self.like_num=Label(text="0", color=(0,0,255,1), halign="left", font_size='15sp',size_hint=(None,None), pos_hint={'x': 0.325, 'top': 0.500})
+        self.like_num=Label(text="0", color=(0,0,255,1), halign="left", font_size='16sp',size_hint=(None,None), pos_hint={'x': 0.325, 'top': 0.494})
         self.add_widget(self.like_num)
 
         #commenti
-        self.txt=TextInput(text="commenta", multiline=False, size_hint=(0.1, 0.046), pos_hint={'x': 0.410, 'top': 0.450}, font_size='14sp')
+        self.txt=TextInput(text="commenta", multiline=False, size_hint=(0.1, 0.046), pos_hint={'x': 0.395, 'top': 0.448}, font_size='14sp')
         self.txt.bind(on_text_validate=self.on_enter)
         self.add_widget(self.txt)
 
@@ -103,9 +110,13 @@ class PostText(FloatLayout):
 
         self.add_widget(MyText(my_text))
         # bottone per i like
-        btn = Button(text="Like", size_hint=(0.04, 0.046), pos_hint={'center_x': 0.435, 'top': 0.690}, font_size='12sp',
-                     on_press=self.btn_pressed)
+        btn = ImageButton('heartblue.png')
+        btn.size_hint = (0.022, 0.032)
+        btn.pos_hint = {'center_x': 0.420, 'top': 0.685}
+        btn.on_press = self.btn_pressed
         self.add_widget(btn)
+
+
 
         # counter per i like
         self.count = 0
@@ -115,7 +126,7 @@ class PostText(FloatLayout):
 
         # commenti
         self.txt = TextInput(text="commenta", multiline=False, size_hint=(0.1, 0.046),
-                             pos_hint={'center_x': 0.505, 'top': 0.690}, font_size='14sp')
+                             pos_hint={'center_x': 0.490, 'top': 0.690}, font_size='14sp')
         self.txt.bind(on_text_validate=self.on_enter)
         self.add_widget(self.txt)
 
@@ -131,6 +142,15 @@ class PostText(FloatLayout):
     # quando l'user preme "invio" da tastiera mentre scrive nel textinput, mostra il commento inserito
     def on_enter(self, *args):
         self.comments.text = (self.comments.text + "\n" + self.txt.text)
+
+class ImageButton(ButtonBehavior, Image):
+    def __init__(self, img, *args):
+        super(ImageButton, self).__init__(*args)
+
+        self.source= img
+
+
+
 
 
 class MyWidget(FloatLayout):
@@ -152,20 +172,21 @@ class MyWidget(FloatLayout):
         self.bind(pos=update_rect, size=update_rect)
 
         #ricerca utenti
-        self.add_widget(TextInput(text='Search users', multiline=False, size_hint=(None, 0.04),
-                                pos_hint={'right': 1, 'top': 0.93}, font_size='12sp'))
+        self.add_widget(TextInput(text='Search', multiline=False, size_hint=(0.08, 0.04),
+                               pos_hint={'right': 0.96, 'top': 0.93}, font_size='12sp'))
 
+        btn2 = ImageButton("little2.jpg")
+        btn2.size_hint=(0.05, 0.04)
+        btn2.pos_hint={'right': 0.99, 'top': 0.93}
+        btn2.font_size='12sp'
+        #btn2.on_press=self.btn2_pressed
+        self.add_widget(btn2)
 
+        #self.add_widget(PostImage("magic.jpg"))
+        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
 
-        self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-
-
-
-
-
-
-
+    def btn2_pressed(self):
+        self.add_widget(Label(text="ok"))
 
 
 
