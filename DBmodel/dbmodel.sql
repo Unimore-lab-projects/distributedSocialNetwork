@@ -1,5 +1,4 @@
 --
--- PostgreSQL database dump
 --
 
 -- Dumped from database version 9.5.4
@@ -41,7 +40,6 @@ CREATE SEQUENCE comments_id_seq
     CACHE 1;
 
 
-ALTER TABLE comments_id_seq OWNER TO archeffect;
 
 SET default_tablespace = '';
 
@@ -61,7 +59,6 @@ CREATE TABLE comments (
 );
 
 
-ALTER TABLE comments OWNER TO postgres;
 
 --
 -- Name: friends_id_seq; Type: SEQUENCE; Schema: public; Owner: archeffect
@@ -75,7 +72,6 @@ CREATE SEQUENCE friends_id_seq
     CACHE 1;
 
 
-ALTER TABLE friends_id_seq OWNER TO archeffect;
 
 --
 -- Name: friends; Type: TABLE; Schema: public; Owner: postgres
@@ -88,7 +84,6 @@ CREATE TABLE friends (
 );
 
 
-ALTER TABLE friends OWNER TO postgres;
 
 --
 -- Name: known_nodes; Type: TABLE; Schema: public; Owner: postgres
@@ -103,7 +98,6 @@ CREATE TABLE known_nodes (
 );
 
 
-ALTER TABLE known_nodes OWNER TO postgres;
 
 --
 -- Name: known_nodes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -117,7 +111,6 @@ CREATE SEQUENCE known_nodes_id_seq
     CACHE 1;
 
 
-ALTER TABLE known_nodes_id_seq OWNER TO postgres;
 
 --
 -- Name: known_nodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -137,7 +130,6 @@ CREATE TABLE my_user (
 );
 
 
-ALTER TABLE my_user OWNER TO postgres;
 
 --
 -- Name: my_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -151,7 +143,6 @@ CREATE SEQUENCE my_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE my_user_id_seq OWNER TO postgres;
 
 --
 -- Name: my_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -172,7 +163,6 @@ CREATE SEQUENCE posts_id_seq
     CACHE 1;
 
 
-ALTER TABLE posts_id_seq OWNER TO archeffect;
 
 --
 -- Name: posts; Type: TABLE; Schema: public; Owner: postgres
@@ -187,7 +177,6 @@ CREATE TABLE posts (
 );
 
 
-ALTER TABLE posts OWNER TO postgres;
 
 --
 -- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
