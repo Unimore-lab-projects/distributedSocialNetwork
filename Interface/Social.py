@@ -11,6 +11,8 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.app import runTouchApp
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
+from kivy.uix.dropdown import DropDown
+
 
 kv = """
 <MyWidget>:
@@ -39,7 +41,7 @@ kv = """
                 icon: 'bianco.png'
 
 
-"""
+ """
 
 Builder.load_string(kv)
 
@@ -172,21 +174,42 @@ class MyWidget(FloatLayout):
         self.bind(pos=update_rect, size=update_rect)
 
         #ricerca utenti
-        self.add_widget(TextInput(text='Search', multiline=False, size_hint=(0.08, 0.04),
-                               pos_hint={'right': 0.96, 'top': 0.93}, font_size='12sp'))
+        self.searchuser=TextInput(text= "Search", multiline=False, size_hint=(0.08, 0.04),
+                               pos_hint={'right': 0.96, 'top': 0.93}, font_size='12sp')
+        self.searchuser.bind(on_text_validate=self.on_enter2)
+        self.add_widget(self.searchuser)
 
-        btn2 = ImageButton("little2.jpg")
-        btn2.size_hint=(0.05, 0.04)
-        btn2.pos_hint={'right': 0.99, 'top': 0.93}
-        btn2.font_size='12sp'
-        #btn2.on_press=self.btn2_pressed
-        self.add_widget(btn2)
+        self.searchbtn = ImageButton("little2.jpg")
+        self.searchbtn.size_hint=(0.05, 0.04)
+        self.searchbtn.pos_hint={'right': 0.99, 'top': 0.93}
+        self.searchbtn.font_size='12sp'
+        #searchbtn.on_press=self.btn2_pressed
+        self.add_widget(self.searchbtn)
 
+        #prova: aggiungo immagine o testo
         self.add_widget(PostImage("magic.jpg"))
         #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
 
-    def btn2_pressed(self):
-        self.add_widget(Label(text="ok"))
+    def on_enter2(self, *args):
+        # DropDownMenu
+        dropdown = DropDown()
+
+        btn1 = Button(text=self.searchuser.text, size_hint_y=None, height=44)
+        btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
+        dropdown.add_widget(btn1)
+
+        self.searchbtn.bind(on_release=dropdown.open)
+        dropdown.bind(on_select=lambda instance, x: setattr(self.searchbtn, 'text', x))
+        # runTouchApp(btn)
+
+
+
+
+
+
+
+
+
 
 
 
