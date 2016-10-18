@@ -46,7 +46,7 @@ Post.validatesPresenceOf('post_id')
 Post.validatesLengthOf('text_content', range=xrange(0, 512))
 
 
-class My_user(DBObject):
+class My_user(DBObject,pb.Copyable):
     TABLENAME = "my_user"
 
 
