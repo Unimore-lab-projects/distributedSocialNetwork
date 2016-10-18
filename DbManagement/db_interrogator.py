@@ -152,7 +152,7 @@ class DatabaseInterrogator:
         return self.get_latets_posts(days).addCallback(self.__process_posts)
 
 
-class PostPackage():
+class PostPackage(pb.Copyable):
     def __init__(self, post=None, commentList=None):
         self.post = post
         self.commentList = commentList
