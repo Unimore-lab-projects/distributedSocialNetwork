@@ -56,19 +56,6 @@ class MyImage(Image):
 
 
 
-# caratteristiche predefinite del testo di un tipo post: testo
-class MyText(Label):
-    def __init__(self, mytext, *args):
-        super(MyText, self).__init__(*args)
-        self.text = mytext
-        self.font_size = "16sp"
-        self.color = (0, 0, 0, 1)
-        self.size_hint = (None, None)
-        self.halign = 'left'
-
-        # self.pos=(self.x+470, self.y+160)
-        self.pos_hint = {'center_x': 0.5, 'top': 0.8}
-
 #contiene il contatore dei like, il bottone dei like, il textinput per i commenti e i commenti inseriti nel textinput
 class Counter(FloatLayout):
     def __init__(self, *args):
@@ -179,13 +166,12 @@ class MyWidget(FloatLayout):
 
         self.add_widget(Image(source='bianco.png', size_hint=(None,None), pos_hint={'left':1,'top':0.97}))
         self.add_widget(Label(text='USER NAME\nHello! These are my posts!', color=(0,0,255,1), halign= "left", size_hint=(None, None),
-                              pos_hint={'x': 0.14, 'top': 0.96}))
+                              pos_hint={'x': 0.14, 'top': 0.97}))
 
         # prova: aggiungo immagine o testo
 
         self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(Counter())
-        # self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+
 
 
 
