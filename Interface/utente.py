@@ -9,10 +9,8 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.app import runTouchApp
 from kivy.uix.scrollview import ScrollView
-from kivy.core.window import Window
-from kivy.uix.dropdown import DropDown
+
 
 kv = """
 <MyWidget>:
