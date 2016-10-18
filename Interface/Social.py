@@ -9,7 +9,6 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.app import runTouchApp
 from kivy.uix.scrollview import ScrollView
 
 from kivy.uix.dropdown import DropDown
@@ -99,7 +98,7 @@ class Counter(FloatLayout):
 
 
 # caratteristiche predefinite dell'immagine di un tipo post: immagine
-#ottimizzata per il BoxLayout
+#ottimizzate per il BoxLayout
 
 class MyImage(Image):
     def __init__(self, name, *args):
@@ -110,18 +109,19 @@ class MyImage(Image):
         self.pos_hint = {'center_y':0.5, 'top':1}
 
 # caratteristiche predefinite del testo di un tipo post: testo
+#ottimizzate per il BoxLayout
 class MyText(Label):
     def __init__(self, mytext, *args):
         super(MyText, self).__init__(*args)
         self.text = mytext
         self.font_size="16sp"
         self.color=(0,0,0,1)
-        self.size_hint = (None, None)
+        self.size_hint = (1, None)
         self.halign='left'
 
+        #non valgono per il boxlayout
         #self.pos=(self.x+470, self.y+160)
-        self.po
-        s_hint = {'center_x': 0.5, 'top': 0.8}
+        #self.pos_hint = {'center_x': 0.5, 'top': 0.8}
 
 
 # tipo post: immagine
@@ -153,53 +153,38 @@ class PostImage(BoxLayout):
 
 
 # tipo post: testo
-class PostText(FloatLayout):
+class PostText(BoxLayout):
     def __init__(self, my_text, *args):
         super(PostText, self).__init__(*args)
 
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(0, 255, 255, 1)  # bianco
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # listen to size and position changes (aggiorno la posizione del rettangolo colorato/layout)
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.orientation = 'vertical'
+        self.size_hint = (None, None)
+        self.width = 450
+        self.height = 300
+        self.pos_hint = {'center_x': 0.55, 'top': 0.95}
+        self.spacing = 0
+
         self.add_widget(MyText(my_text))
-        # bottone per i like
-        btn = ImageButton('heartblue.png')
-        btn.size_hint = (0.022, 0.032)
-        btn.pos_hint = {'center_x': 0.420, 'top': 0.685}
-        btn.on_press = self.btn_pressed
-        self.add_widget(btn)
+        self.add_widget(Counter())
 
-
-
-        # counter per i like
-        self.count = 0
-        self.like_num = Label(text="0", color=(0, 0, 255, 1), halign="left", font_size='19sp', size_hint=(None, None),
-                              pos_hint={'center_x': 0.405, 'top': 0.740})
-        self.add_widget(self.like_num)
-
-        # commenti
-        self.txt = TextInput(text="commenta", multiline=False, size_hint=(0.1, 0.046),
-                             pos_hint={'center_x': 0.490, 'top': 0.690}, font_size='14sp')
-        self.txt.bind(on_text_validate=self.on_enter)
-        self.add_widget(self.txt)
-
-        self.comments = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
-                              pos_hint={'center_x': 0.415, 'top': 0.640})
-        self.add_widget(self.comments)
-
-    # incrementa il contatore quando l'user preme il bottone "like"
-    def btn_pressed(self, *args):
-        self.count += 1
-        self.like_num.text = str(self.count)
-
-    # quando l'user preme "invio" da tastiera mentre scrive nel textinput, mostra il commento inserito
-    def on_enter(self, *args):
-        self.comments.text = (self.comments.text + "\n" + self.txt.text)
-
+#immagini come bottoni
 class ImageButton(ButtonBehavior, Image):
     def __init__(self, img, *args):
         super(ImageButton, self).__init__(*args)
 
         self.source= img
-
-
-
 
 
 class MyWidget(FloatLayout):
@@ -240,8 +225,8 @@ class MyWidget(FloatLayout):
         self.add_widget(self.searchbtn)
 
         #prova: aggiungo immagine o testo
-        self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        #self.add_widget(PostImage("magic.jpg"))
+        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
 
     def on_enter2(self, *args):
         # DropDownMenu

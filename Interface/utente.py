@@ -44,18 +44,6 @@ kv = """
 Builder.load_string(kv)
 
 
-# caratteristiche predefinite dell'immagine di un tipo post: immagine
-#ottimizzata per il BoxLayout
-class MyImage(Image):
-    def __init__(self, name, *args):
-        super(MyImage, self).__init__(*args)
-        self.source = name
-        self.size_hint = (1, None)
-        self.height=500
-        self.pos_hint = {'center_y':0.5, 'top':1}
-
-
-
 #contiene il contatore dei like, il bottone dei like, il textinput per i commenti e i commenti inseriti nel textinput
 class Counter(FloatLayout):
     def __init__(self, *args):
@@ -106,6 +94,32 @@ class Counter(FloatLayout):
         self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
 
+# caratteristiche predefinite dell'immagine di un tipo post: immagine
+#ottimizzata per il BoxLayout
+class MyImage(Image):
+    def __init__(self, name, *args):
+        super(MyImage, self).__init__(*args)
+        self.source = name
+        self.size_hint = (1, None)
+        self.height=500
+        self.pos_hint = {'center_y':0.5, 'top':1}
+
+# caratteristiche predefinite del testo di un tipo post: testo
+# ottimizzate per il BoxLayout
+class MyText(Label):
+    def __init__(self, mytext, *args):
+        super(MyText, self).__init__(*args)
+        self.text = mytext
+        self.font_size = "16sp"
+        self.color = (0, 0, 0, 1)
+        self.size_hint = (1, None)
+        self.halign = 'left'
+
+        # non valgono per il boxlayout
+        # self.pos=(self.x+470, self.y+160)
+        # self.pos_hint = {'center_x': 0.5, 'top': 0.8}
+
+
 
 # tipo post: immagine
 class PostImage(BoxLayout):
@@ -134,7 +148,34 @@ class PostImage(BoxLayout):
         self.add_widget(MyImage("magic.jpg"))
         self.add_widget(Counter())
 
+# tipo post: testo
+class PostText(BoxLayout):
+    def __init__(self, my_text, *args):
+        super(PostText, self).__init__(*args)
 
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(0, 255, 255, 1)  # bianco
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # listen to size and position changes (aggiorno la posizione del rettangolo colorato/layout)
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.orientation = 'vertical'
+        self.size_hint = (None, None)
+        self.width = 450
+        self.height = 300
+        self.pos_hint = {'center_x': 0.55, 'top': 0.95}
+        self.spacing = 0
+
+        self.add_widget(MyText(my_text))
+        self.add_widget(Counter())
+
+#immagini come bottoni
 class ImageButton(ButtonBehavior, Image):
     def __init__(self, img, *args):
         super(ImageButton, self).__init__(*args)
@@ -170,21 +211,18 @@ class MyWidget(FloatLayout):
 
         # prova: aggiungo immagine o testo
 
-        self.add_widget(PostImage("magic.jpg"))
-
-
+        #self.add_widget(PostImage("magic.jpg"))
+        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
 
 
 
 class MySocialApp(App):
     def build(self):
 
-
         sv = ScrollView(size_hint=(None,None), size=(1000, 500), pos_hint={'center_x': 0.5, 'top': 0.9},
                         do_scroll_x=False, do_scroll_y=True)
 
         sv.add_widget(MyWidget())
-
 
         return sv
 
