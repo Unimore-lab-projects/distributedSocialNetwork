@@ -128,7 +128,7 @@ class PostImage(BoxLayout):
         self.size_hint = (None, None)
         self.width= 450
         self.height = 600
-        self.pos_hint = {'center_x': 0.6, 'top': 0.95}
+        self.pos_hint = {'center_x': 0.55, 'top': 0.95}
         self.spacing=0
 
         self.add_widget(MyImage("magic.jpg"))
