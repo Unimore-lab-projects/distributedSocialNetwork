@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from twisted.internet import defer
 from tables import *
 from twisted.python import log
+from twistar.utils import joinMultipleWheres
 
 
 class DatabaseInterrogator:
@@ -70,12 +71,23 @@ class DatabaseInterrogator:
                 logging.debug("Friend: %s username %s " % (friend.user_id, friend.username))
             return friends
 
+    def __filter_known_nodes(self, friends):
+        whereList = []
+        where = []
+        for friend in friends:
+            logging.debug("Friend: %s username %s " % (friend.user_id, friend.username))
+            where = ['user_id = ? ', friend.user_id]
+            whereList.append(where)
+
+        condition = joinMultipleWheres(whereList, joiner="OR")
+        return Known_node().find(where=condition).addCallback(self.__done_all_nodes, None)
+
     def get_friends(self):
         """
         ottiene tutti gli amici
         :return: lista di deferred contentnte oggetti Friend
         """
-        return Friend().all().addCallback(self.__done_friends)
+        return Friend().all().addCallback(self.__filter_known_nodes)
 
     # controllo se user_id e tra known_nodes
 
