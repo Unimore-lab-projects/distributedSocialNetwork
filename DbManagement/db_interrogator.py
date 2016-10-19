@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 import logging
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -27,20 +28,24 @@ class DatabaseInterrogator:
 
     # known_nodes
 
-    def __done_all_nodes(self, nodes):
+    def __done_all_nodes(self, nodes, my_user):
         nodesDict = dict()
         for node in nodes:
             logging.debug("Node: %s address: %s port %s last updated %s" % (
                 node.user_id, node.address, node.port, node.last_update))
+            if my_user is not None:
+                if my_user.user_id == node.user_id:
+                    continue
             nodesDict[node.user_id] = node
         return nodesDict
 
-    def get_known_nodes(self):
+    def get_known_nodes(self, my_user=None):
         """
-         Ottiene la lista dei known nodes dal database
-        :return: ritorna una lista di oggetti Known_node
+        Ottiene la lista dei nodi conosciuti
+        :param my_user: se è None allora ritorna tutti i nodi, altrimenti esclude dal dizionario questo nodo
+        :return: un dizionario di nodi conosciuti
         """
-        return Known_node().all().addCallback(self.__done_all_nodes)
+        return Known_node().all().addCallback(self.__done_all_nodes, my_user)
 
     # get a single node from uuid
 
