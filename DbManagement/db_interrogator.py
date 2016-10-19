@@ -73,9 +73,8 @@ class DatabaseInterrogator:
 
     def __filter_known_nodes(self, friends):
         whereList = []
-        where = []
         for friend in friends:
-            logging.debug("Friend: %s username %s " % (friend.user_id, friend.username))
+            # logging.debug("Friend: %s username %s " % (friend.user_id, friend.username))
             where = ['user_id = ? ', friend.user_id]
             whereList.append(where)
 
