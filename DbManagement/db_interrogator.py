@@ -70,6 +70,11 @@ class DatabaseInterrogator:
         """
         return Friend().all().addCallback(self.__done_friends)
 
+    # controllo se user_id e tra amici
+
+    def check_friend(self, user_id):
+        return Friend().exists(where=['user_id = ?', user_id])
+
     # comments per post
 
     def __done_post_comments(self, comments, post_id):
