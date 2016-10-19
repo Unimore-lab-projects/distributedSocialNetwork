@@ -29,13 +29,15 @@ class DatabaseInterrogator:
     # known_nodes
 
     def __done_all_nodes(self, nodes, my_user):
+        if my_user is not None:
+            logging.debug("excluding my_user %s" % my_user.user_id)
         nodesDict = dict()
         for node in nodes:
-            logging.debug("Node: %s address: %s port %s last updated %s" % (
-                node.user_id, node.address, node.port, node.last_update))
             if my_user is not None:
                 if my_user.user_id == node.user_id:
                     continue
+            logging.debug("Node: %s address: %s port %s last updated %s" % (
+                node.user_id, node.address, node.port, node.last_update))
             nodesDict[node.user_id] = node
         return nodesDict
 
