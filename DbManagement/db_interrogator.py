@@ -29,26 +29,26 @@ class DatabaseInterrogator:
 
     # known_nodes
 
-    def __done_all_nodes(self, nodes, my_user):
-        if my_user is not None:
-            logging.debug("excluding my_user %s" % my_user.user_id)
+    def __done_all_nodes(self, nodes, filterNode):
+        if filterNode is not None:
+            logging.debug("excluding Known_node %s" % filterNode.user_id)
         nodesDict = dict()
         for node in nodes:
-            if my_user is not None:
-                if my_user.user_id == node.user_id:
+            if filterNode is not None:
+                if filterNode.user_id == node.user_id:
                     continue
             logging.debug("Node: %s address: %s port %s last updated %s" % (
                 node.user_id, node.address, node.port, node.last_update))
             nodesDict[node.user_id] = node
         return nodesDict
 
-    def get_known_nodes(self, my_user=None):
+    def get_known_nodes(self, filterNode=None):
         """
         Ottiene la lista dei nodi conosciuti
-        :param my_user: se è None allora ritorna tutti i nodi, altrimenti esclude dal dizionario questo nodo
+        :param filterNode: se è None allora ritorna tutti i nodi, altrimenti esclude dal dizionario questo nodo
         :return: un dizionario di nodi conosciuti
         """
-        return Known_node().all().addCallback(self.__done_all_nodes, my_user)
+        return Known_node().all().addCallback(self.__done_all_nodes, filterNode)
 
     # get a single node from uuid
 
