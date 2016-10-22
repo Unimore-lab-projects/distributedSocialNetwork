@@ -26,19 +26,21 @@ class DatabaseInsertor:
             logging.error(user.errors)
         else:
             logging.debug("My user created. uuid is %s and username is %s" % (user.user_id, user.username))
+        return user
 
-    def __check_existence(self, user_exists, name):
+    def __check_existence(self, my_user, name):
         """se non esiste lo crea."""
-        if user_exists == 0:
+        if my_user is None:
             extras.register_uuid()
             me = My_user(user_id=uuid4(), username=name)
-            me.save().addCallbacks(self.__user_done, log.err)
+            return me.save().addCallbacks(self.__user_done, log.err)
         else:
             logging.debug("user already existing")
+            return my_user
 
     def insert_my_user(self, name):
         """controlla se esiste già un utente"""
-        My_user.count().addCallback(self.__check_existence, name)
+        return My_user.find(limit=1).addCallback(self.__check_existence, name)
 
     # INSERT O UPDATE di un NODE
 
