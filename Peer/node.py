@@ -2,15 +2,29 @@ from twisted.python import log
 from twisted.spread import pb
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
+from twisted.internet.defer import DeferredList
 
+from twistar.dbconfig.base import InteractionBase
 
+from distributedSocialNetwork.DbManagement.tables import *
 from distributedSocialNetwork.DbManagement.db_insertor import *
 from distributedSocialNetwork.DbManagement.db_interrogator import *
 from distributedSocialNetwork.DbManagement.db_openConnection import *
 from distributedSocialNetwork.DbManagement.debug_messages import *
 
-from random import randint
 from datetime import datetime
+
+class nodeReceivedCopy(Known_node, pb.RemoteCopy):
+    pass
+
+class userReceivedCopy(My_user, pb.RemoteCopy):
+    pass
+
+
+pb.setUnjellyableForClass(Known_node, nodeReceivedCopy)
+pb.setUnjellyableForClass(My_user, userReceivedCopy)
+
+
 
 def start_logging():
     enable_logging()
@@ -39,12 +53,11 @@ def getAddressFromNode(node):
     return address[0]
 
 class remoteConnection:
-    def __init__(self, node):
+    def __init__(self, node, clientFactory):
         self.node=node
-        self.clientFactory=pb.PBClientFactory()
-        reactor.connectTCP(getAddressFromNode(node), node.port,self.clientFactory)
+        reactor.connectTCP(getAddressFromNode(node), node.port,clientFactory)
         self.rootRemoteReference=None
-        self.rootDeferred=self.clientFactory.getRootObject()
+        self.rootDeferred=clientFactory.getRootObject()
         pass
 
     def query(self, method, methodArgs=None, callback=None, callbackArgs=None):
@@ -65,14 +78,15 @@ class remoteConnection:
 class nodeConnections:
     def __init__(self):
         self.connections=dict()
+        self.clientFactory=pb.PBClientFactory()
     def connect(self, node):
         if self.connections.has_key(node.user_id):
             return self.connections[node.user_id]
         else:
-            self.connections[node.user_id]=remoteConnection(node)
+            self.connections[node.user_id]=remoteConnection(node, self.clientFactory)
             return self.connections[node.user_id]
     def refresh(self, node):
-        self.connections[node.user_id]=remoteConnection(node)
+        self.connections[node.user_id]=remoteConnection(node, self.clientFactory)
         return self.connections[node.user_id]
 
 class node(pb.Root):
@@ -81,18 +95,16 @@ class node(pb.Root):
         
         #inizializzazione delle variabili di istanza:
         self.config=getDictFromFile(configFile, '=')
-        self.dbpool=openConnectionOnDB(self.config["db_name"],self.config["db_port"],self.config["db_user"],
-        self.config["db_password"],self.config["db_address"])
+        self.dbpool=openConnectionOnDB(self.config["db_name"],self.config["db_port"],self.config["db_user"],self.config["db_password"],self.config["db_address"])
         
         self.insertor=DatabaseInsertor(self.dbpool)
         self.interrogator=DatabaseInterrogator(self.dbpool)
-        self.remoteInterface=remoteNodeInterface(self.insertor, self.interrogator, self.config["peer_port"])
-        self.currentConnections=nodeconnections()
+        self.currentConnections=nodeConnections()
         #----------------------------------------------------------------
         
-        #inserimento di un record my_user nel database (se la tabella my_user è vuota)
-        self.insertor.insert_my_user(self.config["peer_user"])
+        #self.insertor.insert_my_user(self.config["peer_user"])
         #-----------------------------------------------------------------
+        reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
         pass
     
     def incomingConnection(self, callerNode):
@@ -103,11 +115,16 @@ class node(pb.Root):
 
     def getMyNode(self):
         result=Deferred()
-        self.interrogator.get_known_nodes().addCallback(self.__waitForMyUser,  result)
+        self.insertor.insert_my_user(self.config["peer_user"]).addCallback(self.__getMyUser,  result)
         return result
         pass
     
+    def __getMyUser(self,done, result):
+        self.interrogator.get_my_user().addCallback(self.__waitForMyUser, result)
+        pass
+    
     def __waitForMyUser(self, myUser, deferred):
+        print("user_id:"+myUser.user_id)
         myNode=Known_node()
         myNode.user_id=myUser.user_id
         myNode.username=myUser.username
@@ -165,11 +182,12 @@ class node(pb.Root):
         myNodeDeferred=self.getMyNode()
         currentKnownNodesDeferred=self.interrogator.get_known_nodes()
         starter=DeferredList([currentKnownNodesDeferred,  myNodeDeferred])
-        starter.addCallback(__waitforStartCondition)
+        starter.addCallback(self.__waitForStartCondition)
         pass
     
     def __waitForStartCondition(self, starter):
-        self.getAllKnownNodes(starter[0], dict(), starter[1])
+        visitedNodesDict=dict()
+        self.getAllKnownNodes(starter[0][1], visitedNodesDict, starter[1][1])
     
     
     def getAllKnownNodes(self,nodesDict, visitedNodesDict, myNode):
@@ -177,30 +195,33 @@ class node(pb.Root):
         
         if(len(nodesDict)<self.config["peer_known_nodes_threshold"]):
             for i in nodesDict:
-                if((not visitedNodesDict.has_key(i))):
+                if((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id==myNode.user_id)):
                     visitedNodesDict[i]=nodesDict[i]
                     notVisitedNodesDict[i]=nodesDict[i]
+                    print(nodesDict[i])
                     self.insertor.insert_node(nodesDict[i])
+                pass
             
             for i in notVisitedNodesDict:
-                connection=self.currentConnections.connect(notvisitedNodesDict[i])
-                connection.query("getKnownNodes",[self.myNode],  self.populateKnownNodes, [visitedNodesDict])
-                print("visiting "+str(i))
+                connection=self.currentConnections.connect(notVisitedNodesDict[i])
+                connection.query("getKnownNodes",[myNode],  self.getAllKnownNodes, [visitedNodesDict, myNode])
+                print("visiting address"+notVisitedNodesDict[i].address+" user_id"+str(i))
         
     pass
     
     def buildTimeline(self):
+        timeline=DeferredList([])
         myNodeDeferred=self.getMyNode()
         myFriendsDeferred=self.interrogator.get_friends()
         starter=DeferredList([myNodeDeferred, myFriendsDeferred])
-        starter.addCallback(__getPostsAndComments)
+        starter.addCallback(__getAllPostsAndComments, timeline)
+        return timeline
         pass
     
-    def __getAllPostsAndComments(self, starter):
+    def __getAllPostsAndComments(self, starter, timeline):
         myNode=starter[0]
         myFriends=starter[1]
         
-        timeline=DeferredList([])
         for i in myFriends:
             c=self.currentConnections.connect(myFriends[i])
             c.rootDeferred.addCallback(__getPostsAndCommentsCallback, timeline)
