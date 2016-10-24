@@ -28,7 +28,7 @@ class DatabaseInsertor:
         if my_user is None:
             extras.register_uuid()
             uid = uuid4()
-            extensions.adapt(uid)
+            extensions.adapt(uid).getquoted()
             me = My_user(user_id=uid, username=name)
             return me.save().addCallbacks(self.__user_done, log.err)
         else:
