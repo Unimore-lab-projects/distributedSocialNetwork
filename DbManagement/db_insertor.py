@@ -5,7 +5,7 @@ from psycopg2 import extras, extensions
 from twisted.python import log
 from db_interrogator import *
 from debug_messages import *
-from twisted.internet import defer
+from twisted.internet import defer, reactor
 
 
 class DatabaseInsertor:
@@ -20,8 +20,16 @@ class DatabaseInsertor:
 
     # INSERT USER
 
-    def __user_done(self, user):
+    def __done(self):
         return My_user.find(limit=1)
+
+    def __user_done(self, user):
+        if len(user.errors) > 0:
+            logging.error(user.errors)
+            return None
+        # return My_user.find(limit=1)
+        d = defer.Deferred()
+        return reactor.callLater(2, d.addCallback, self.__done)
 
     def __check_existence(self, my_user, name):
         """se non esiste lo crea."""
