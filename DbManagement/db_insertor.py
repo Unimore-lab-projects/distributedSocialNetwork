@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 import time
 from uuid import uuid4
-from psycopg2 import extras
+from psycopg2 import extras, extensions
 from twisted.python import log
 from db_interrogator import *
 from debug_messages import *
@@ -21,18 +21,15 @@ class DatabaseInsertor:
     # INSERT USER
 
     def __user_done(self, user):
-        if len(user.errors) > 0:
-            logging.error('%s errors in user creation' % len(user.errors))
-            logging.error(user.errors)
-        else:
-            logging.debug("My user created. uuid is %s and username is %s" % (user.user_id, user.username))
-        return user
+        return My_user.find(limit=1)
 
     def __check_existence(self, my_user, name):
         """se non esiste lo crea."""
         if my_user is None:
             extras.register_uuid()
-            me = My_user(user_id=uuid4(), username=name)
+            uid = uuid4()
+            extensions.adapt(uid)
+            me = My_user(user_id=uid, username=name)
             return me.save().addCallbacks(self.__user_done, log.err)
         else:
             logging.debug("user already existing")
