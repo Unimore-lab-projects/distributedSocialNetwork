@@ -14,7 +14,7 @@ from distributedSocialNetwork.DbManagement.debug_messages import *
 
 from datetime import datetime
 
-from uuid import *
+from uuid import uuid4
 
 class nodeReceivedCopy(Known_node, pb.RemoteCopy):
     pass
@@ -48,9 +48,9 @@ def getDictFromFile(filename, separator):
     resultDict=dict()
     for line in text:
         couple=line.split(separator)
-        print(couple)
+        #print(couple)
         resultDict[couple[0]]=couple[1]
-    print(resultDict)
+    #print(resultDict)
     return resultDict
     pass
 
@@ -58,6 +58,12 @@ def getAddressFromNode(node):
     address=node.address
     address=address.split("/")
     return address[0]
+    pass
+    
+def printNodesDict(nodesDict):
+    for i in nodesDict:
+        print("user_id: "+str(nodesDict[i].user_id)+" port: "+str(nodesDict[i].port))
+    pass
 
 class remoteConnection:
     def __init__(self, node, clientFactory):
@@ -83,7 +89,7 @@ class remoteConnection:
         pass
     
     def __waitForRootErrback(self, reason):
-        print(reason)
+        print("Errback called in remoteConnection istance reason: "+str(reason))
         pass
 
 class nodeConnections:
@@ -152,9 +158,16 @@ class node(pb.Root):
         pass
     
     def __convertUuidType(self, nodesDict, deferred):
+        resultNodesDict=dict()
         for i in nodesDict:
-            nodesDict[i].user_id=str(nodesDict[i].user_id)
-        deferred.callback(nodesDict)
+            resultNodesDict[str(i)]=nodesDict[i]
+            uuidString=resultNodesDict[str(i)].user_id
+            if not isinstance(uuidString, basestring):
+                uuidString=uuidString.urn
+                uuidString=uuidString[9:]
+            resultNodesDict[str(i)].user_id=uuidString
+        
+        deferred.callback(resultNodesDict)
         pass
     
     
@@ -203,36 +216,41 @@ class node(pb.Root):
         self.interrogator.get_known_nodes().addCallback(self.__convertUuidType, currentKnownNodesDeferred)
         starter=DeferredList([currentKnownNodesDeferred,  myNodeDeferred])
         starter.addCallback(self.__waitForStartCondition)
+        currentKnownNodesDeferred.addErrback(self.__printErrorErrback)
         pass
     
     def __waitForStartCondition(self, starter):
         visitedNodesDict=dict()
         self.getAllKnownNodes(starter[0][1], visitedNodesDict, starter[1][1])
     
+    def __printErrorErrback(self, result):
+        print("errback: "+result)
+        pass
     
     def getAllKnownNodes(self,nodesDict, visitedNodesDict, myNode):
         notVisitedNodesDict=dict()
         
         if(len(nodesDict)<int(self.config["peer_known_nodes_threshold"])):
             for i in nodesDict:
-                if((not visitedNodesDict.has_key(i)) and (not str(nodesDict[i].user_id)==str(myNode.user_id))):
+                if((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id==myNode.user_id)):
                     visitedNodesDict[i]=nodesDict[i]
                     notVisitedNodesDict[i]=nodesDict[i]
-                    print(nodesDict[i])
+                    #print(nodesDict[i])
+                    
                     self.insertor.insert_node(nodesDict[i])
                 pass
             
             print("nodi ricevuti:")
-            print(nodesDict)
+            printNodesDict(nodesDict)
             print("nodi visitati:")
-            print(visitedNodesDict)
+            printNodesDict(visitedNodesDict)
             print("nodi da visitare:")
-            print(notVisitedNodesDict)
+            printNodesDict(notVisitedNodesDict)
             
             for i in notVisitedNodesDict:
                 connection=self.currentConnections.connect(notVisitedNodesDict[i])
                 connection.query("getKnownNodes",[myNode],  self.getAllKnownNodes, [visitedNodesDict, myNode])
-                print("visiting address: "+notVisitedNodesDict[i].address+" user_id: "+str(i))
+                print("visiting address: "+notVisitedNodesDict[i].address+" port: "+str(notVisitedNodesDict[i].port)+" user_id: "+str(notVisitedNodesDict[i].user_id))
         
     pass
     
