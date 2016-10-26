@@ -14,21 +14,16 @@ from distributedSocialNetwork.DbManagement.debug_messages import *
 
 from datetime import datetime
 
-from uuid import uuid4
 
-class nodeReceivedCopy(Known_node, pb.RemoteCopy):
+class nodeReceivedCopy(Known_node,  pb.RemoteCopy):
     pass
 
-class userReceivedCopy(My_user, pb.RemoteCopy):
+class userReceivedCopy(My_user ,  pb.RemoteCopy):
     pass
-
-#class uuidReceivedCopy(UUID, pb.RemoteCopy):
-#    pass
 
 
 pb.setUnjellyableForClass(Known_node, nodeReceivedCopy)
 pb.setUnjellyableForClass(My_user, userReceivedCopy)
-#pb.setUnjellyableForClass(UUID, uuidReceivedCopy)
 
 
 
@@ -65,30 +60,42 @@ def printNodesDict(nodesDict):
         print("user_id: "+str(nodesDict[i].user_id)+" port: "+str(nodesDict[i].port))
     pass
 
+def convertReceivedNodeInKnownNode(receivedNode):
+    bufNode=Known_node()
+    bufNode.user_id=str(receivedNode.user_id)
+    bufNode.username=receivedNode.username
+    bufNode.address=receivedNode.address
+    bufNode.port=receivedNode.port
+    bufNode.last_update=receivedNode.last_update
+    return bufNode
+    pass
+
 class remoteConnection:
     def __init__(self, node, clientFactory):
         self.node=node
-        reactor.connectTCP(getAddressFromNode(node), node.port,clientFactory)
+        reactor.connectTCP(getAddressFromNode(node), int(node.port),clientFactory)
         self.rootRemoteReference=None
         self.rootDeferred=clientFactory.getRootObject()
         pass
 
     def query(self, method, methodArgs=None, callback=None, callbackArgs=None):
         if self.rootRemoteReference is not None:
-            __waitForRootObject(self.rootRemoteReference, method, methodArgs, callback, callbackArgs)
+            self.__waitForRootCallback(self.rootRemoteReference, method, methodArgs, callback, callbackArgs)
         else:
             self.rootDeferred.addCallback(self.__waitForRootCallback, method, methodArgs, callback, callbackArgs)
-            self.rootDeferred.addCallback(self.__waitForRootErrback)
+            self.rootDeferred.addErrback(self.__Errback)
         pass
 
     def __waitForRootCallback(self, rootRemoteRef, method,  methodArgs, callback, callbackArgs):
+        self.rootRemoteReference=rootRemoteRef
         deferredObj=rootRemoteRef.callRemote(method, *methodArgs)
         if callback is not None:
             deferredObj.addCallback(callback, *callbackArgs)
-#        return self.deferredObj
+        deferredObj.addErrback(self.__Errback)
+        return rootRemoteRef
         pass
     
-    def __waitForRootErrback(self, reason):
+    def __Errback(self, reason):
         print("Errback called in remoteConnection istance reason: "+str(reason))
         pass
 
@@ -183,6 +190,7 @@ class node(pb.Root):
         pass
 
     def remote_resolveUserID(self, callerNode,  targetUid,  timeToLive):
+        callerNode=convertReceivedNodeInKnownNode(callerNode)
         self.incomingConnection(callerNode)
         myNodeDeferred=self.getMyNode()
         checkNodeDeferred=self.interrogator.get_node(targetUid)
@@ -190,22 +198,23 @@ class node(pb.Root):
         starter.addCallback(self.__isNodeKnown, callerNode, targetUid, timeToLive)
         pass
     
-    def __isNodeKnown(self, result, callerNode, targetUid, timetoLive):
-        myNode=result[0]
-        nodeChecked=node[1]
+    def __isNodeKnown(self, result, callerNode, targetUid, timeToLive):
+        myNode=result[0][1]
+        nodeFound=result[1][1]
         
-        if not nodeChecked == None:
+        if nodeFound is not None:
             c=self.currentConnections.connect(callerNode)
-            c.query("passNode",myNode, nodeChecked )
+            c.query("passNode",[myNode , nodeFound ])
         elif timeToLive>0:
             timeToLive=timeToLive-1
-            deferredKnownNodes=self.interrogator.get_known_nodes(callerNode)
-            deferredKnownNodes.addCallback(self.__forwardToKnownNodes, callernode, targetUid, timeToLive)
+            #deferredKnownNodes=self.interrogator.get_known_nodes(callerNode)
+            deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
+            deferredKnownNodes.addCallback(self.__forwardToKnownNodes, callerNode, targetUid, timeToLive)
         pass
     
     def __forwardToKnownNodes(self, knownNodes,callerNode, targetUid, timeToLive ):
         for i in knownNodes:
-            c=currentConnections.connect(knownNodes[i])
+            c=self.currentConnections.connect(knownNodes[i])
             c.query("resolveUserID", [callerNode, targetUid, timeToLive])
         pass
     
@@ -278,11 +287,21 @@ class node(pb.Root):
         pass
     
     def __getPostsAndCommentsErrback(self, reason, myNode, friendNotReachable):
-        timeToLive=self.config["peer_time_to_live"]
-        deferredKnownNodes=self.interrogator.get_known_nodes(callerNode)
+        timeToLive=int(self.config["peer_time_to_live"])
+        deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
         deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode, friendNotReachable.user_id, timeToLive)
         pass
-        
+    
+    def resolve(self, uuid):
+        resolvingNode=Known_node()
+        resolvingNode.user_id=uuid
+        deferred=self.getMyNode()
+        deferred.addCallback(self.__gotMyNode, resolvingNode)
+        pass
+    
+    def __gotMyNode(self, myNode, resolvingNode):
+        self.__getPostsAndCommentsErrback("", myNode, resolvingNode)
+        pass
         
 
         
