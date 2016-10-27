@@ -6,6 +6,8 @@ from twisted.spread import pb
 
 class Known_node(DBObject, pb.Copyable):
     TABLENAME = "known_nodes"
+    def __str__(self):
+	return "user_id:  "+ str(self.user_id)+" port: "+str(self.port)
 
 
 Known_node.validatesPresenceOf('user_id')
