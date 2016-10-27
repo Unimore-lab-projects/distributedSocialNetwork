@@ -18,12 +18,20 @@ from datetime import datetime
 class nodeReceivedCopy(Known_node,  pb.RemoteCopy):
     pass
 
-class userReceivedCopy(My_user ,  pb.RemoteCopy):
+class postReceivedCopy(Post,  pb.RemoteCopy):
+    pass
+
+class commentReceivedCopy(Comment,  pb.RemoteCopy):
+    pass
+
+class postPackageReceivedCopy(PostPackage,  pb.RemoteCopy):
     pass
 
 
 pb.setUnjellyableForClass(Known_node, nodeReceivedCopy)
-pb.setUnjellyableForClass(My_user, userReceivedCopy)
+pb.setUnjellyableForClass(Post, postReceivedCopy)
+pb.setUnjellyableForClass(Comment, postReceivedCopy)
+pb.setUnjellyableForClass(PostPackage, postReceivedCopy)
 
 
 
@@ -57,7 +65,7 @@ def getAddressFromNode(node):
     
 def printNodesDict(nodesDict):
     for i in nodesDict:
-        print("user_id: "+str(nodesDict[i].user_id)+" port: "+str(nodesDict[i].port))
+        print("user_id: "+str(nodesDict[i].user_id)+" address: "+str(nodesDict[i].address)+" port: "+str(nodesDict[i].port))
     pass
 
 def convertReceivedNodeInKnownNode(receivedNode):
@@ -70,14 +78,23 @@ def convertReceivedNodeInKnownNode(receivedNode):
     return bufNode
     pass
 
+
+def convertUuid(uuid):
+    uuidString=uuid
+    if not isinstance(uuidString, basestring):
+            uuidString=uuidString.urn
+            uuidString=uuidString[9:]
+    return uuidString
+
+
 class remoteConnection:
     def __init__(self, node, clientFactory):
         self.node=node
         reactor.connectTCP(getAddressFromNode(node), int(node.port),clientFactory)
         self.rootRemoteReference=None
-        print(self.node.port)
+        #try
         self.rootDeferred=clientFactory.getRootObject()
-        print(self.node.port)
+        #ecception
         pass
 
     def query(self, method, methodArgs=None, callback=None, callbackArgs=None):
@@ -98,7 +115,7 @@ class remoteConnection:
         pass
     
     def __Errback(self, reason, remoteNode):
-        print("Errback called in remoteConnection istance connecting to: "+str(remoteNode.port))
+        print("Errback called in remoteConnection istance connecting to: "+str(remoteNode.port)+" reason: "+str(reason))
         pass
 
 class nodeConnections:
@@ -150,7 +167,7 @@ class node(pb.Root):
     def __waitForMyUser(self, myUser, deferred):
         myNode=Known_node()
         myNode.user_id=str(myUser.user_id)
-        myNode.username=myUser.username
+        #myNode.username=myUser.username
         myNode.address=self.config["peer_address"]
         myNode.port=self.config["peer_port"]
         myNode.last_update=datetime.today()
@@ -164,7 +181,7 @@ class node(pb.Root):
         return result
         pass
     
-    def __convertUuidType(self, nodesDict, deferred):
+    def __convertKnownNodeUuidType(self, nodesDict, deferred):
         resultNodesDict=dict()
         for i in nodesDict:
             resultNodesDict[str(i)]=nodesDict[i]
@@ -179,10 +196,33 @@ class node(pb.Root):
     
     
     def remote_getPostsAndComments(self, callerNode, days):
+        result=Deferred()
         self.incomingConnection(callerNode)
-        return interrogator.get_recents(days)
+        self.interrogator.get_recents(days).addCallback(self.__waitForPackageList, result)
+        return result
         pass
         
+    def __waitForPackageList(self, postPackageDeferreds,  result):
+        packageDeferreds=[]
+        for package in postPackageDeferreds:
+            packageDeferreds.append(package)
+        packageDeferredList=DeferredList(packageDeferreds)
+        packageDeferredList.addCallback(self.__convertPostPackageUuidType, result)
+        
+        pass
+    
+    def __convertPostPackageUuidType(self,  postPackageLIst, result):
+        
+        for package in postPackageLIst:
+            print(package[1].getPost())
+            package[1].getPost().user_id=convertUuid(package[1].getPost().user_id)
+            comments=package[1].getComments()
+            for comment in comments:
+                comment.user_id=convertUuid(comment.user_id)
+
+        result.callback(postPackageLIst)
+        pass
+    
     def remote_passNode(self, callerNode,  passedNode):
         print("Risposta alla richiesta di risoluzione:")
         self.incomingConnection(callerNode)
@@ -272,29 +312,64 @@ class node(pb.Root):
     pass
     
     def buildTimeline(self):
-        timeline=DeferredList([])
+        result=Deferred()
         myNodeDeferred=self.getMyNode()
         myFriendsDeferred=self.interrogator.get_friends()
         starter=DeferredList([myNodeDeferred, myFriendsDeferred])
-        starter.addCallback(__getAllPostsAndComments, timeline)
-        return timeline
+        starter.addCallback(self.__getAllPostsAndComments,int(self.config["peer_default_timeline_days"]),  result)
+        return result
         pass
     
-    def __getAllPostsAndComments(self, starter, timeline):
-        myNode=starter[0]
-        myFriends=starter[1]
+    def __getAllPostsAndComments(self, starter, days, result):
+        myNode=starter[0][1]
+        myFriends=starter[1][1]
+        
+        rootDeferreds=[]
+        
+        print("****************************************")
+        print("Amici a cui richiedo i post:")
+        printNodesDict(myFriends)
+        print("****************************************")
         
         for i in myFriends:
             c=self.currentConnections.connect(myFriends[i])
-            c.rootDeferred.addCallback(__getPostsAndCommentsCallback, timeline)
-            c.rootDeferred.addErrback(__getPostsAndCommentsErrback, myNode, myFriends[i])
+            rootDeferreds.append(c.rootDeferred)
+#            c.rootDeferred.addCallback(self.__getPostsAndCommentsCallback, myNode, days,  timeline)
+            c.rootDeferred.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
+        
+        rootDeferredList=DeferredList(rootDeferreds)
+        rootDeferredList.addCallback(self.__getPostsAndCommentsCallback, myNode, days, result)
+        #rootDeferredList.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
+        
         pass
     
-    def __getPostsAndCommentsCallback(self, remoteReference, timeline):
-        timeline.append(remoteReference.callRemote("getPostsAndComments"))
+    def __getPostsAndCommentsCallback(self, remoteReferenceList, myNode,  days,  result):
+#        timeline.append(remoteReference.callRemote("getPostsAndComments", myNode, days))
+        timeline=[]
+        for i in remoteReferenceList:
+            if i[0]:
+                timeline.append(i[1].callRemote("getPostsAndComments", myNode, days))
+#            else:
+#                timeToLive=int(self.config["peer_time_to_live"])
+#                deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
+#                deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode,  myNode, friendNotReachable.user_id, timeToLive)
+
+        timelineDeferred=DeferredList(timeline)
+        timelineDeferred.addCallback(self.__waitForTimeline, result)
+        pass
+    
+    def __waitForTimeline(self, timeline, result):
+#        for postList in timeline:
+#            for post in postList[1]:
+#                post=convertPost(post)
+        for i in timeline:
+            for j in i[1]:
+                print(j[1])
+        result.callback(timeline)
         pass
     
     def __getPostsAndCommentsErrback(self, reason, myNode, friendNotReachable):
+        print(reason)
         timeToLive=int(self.config["peer_time_to_live"])
         deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
         deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode,  myNode, friendNotReachable.user_id, timeToLive)

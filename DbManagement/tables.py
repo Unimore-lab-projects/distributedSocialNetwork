@@ -26,7 +26,7 @@ Friend.validatesPresenceOf('user_id')
 Friend.validatesLengthOf('username', range=xrange(1, 16))
 
 
-class Comment(DBObject):
+class Comment(DBObject,pb.Copyable):
     # HASONE = [{'name': 'friend', 'class_name': 'Friend', 'foreign_key': 'user_id'}]
     pass
 
@@ -39,7 +39,7 @@ Comment.validatesLengthOf('content', range=xrange(0, 512))
 Comment.validatesLengthOf('username', range=xrange(1, 16))
 
 
-class Post(DBObject):
+class Post(DBObject,pb.Copyable):
     pass
 
 
