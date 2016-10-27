@@ -29,6 +29,7 @@ class DatabaseInsertor:
             return None
         # return My_user.find(limit=1)
         d = defer.Deferred()
+        logging.debug("FROM insert_my_user: my user created")
         return reactor.callLater(2, d.addCallback, self.__done)
 
     def __check_existence(self, my_user, name):
@@ -38,33 +39,36 @@ class DatabaseInsertor:
             uid = uuid4()
             extensions.adapt(uid).getquoted()
             me = My_user(user_id=uid, username=name)
+            logging.debug("FROM insert_my_user: my user not existing. creating.")
             return me.save().addCallbacks(self.__user_done, log.err)
         else:
-            logging.debug("user already existing")
+            logging.debug("FROM insert_my_user: user already existing")
             return my_user
 
     def insert_my_user(self, name):
         """controlla se esiste già un utente"""
+        logging.debug("FROM insert_my_user: inserting my username: %s generating uuid" % name)
         return My_user.find(limit=1).addCallback(self.__check_existence, name)
 
     # INSERT O UPDATE di un NODE
 
     def __node_created(self, node):
         if len(node.errors) > 0:
-            logging.error('%s errors in node creation' % len(node.errors))
+            logging.error('FROM insert_node: %s errors in node creation' % len(node.errors))
             logging.error(node.errors)
         else:
-            logging.debug("Node created. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
+            logging.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
 
     def __node_updated(self, node):
         if len(node.errors) > 0:
-            logging.error('%s errors in node update' % len(node.errors))
+            logging.error('FROM insert_node: %s errors in node update' % len(node.errors))
             logging.error(node.errors)
         else:
-            logging.debug("Node updated. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
+            logging.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
 
     def __update_node(self, node, user_id, address, port, last_update):
         if node is None:
+            logging.debug("FROM insert_node: creating a new node")
             # node doesn't exists
             node = Known_node()
             node.user_id = user_id
@@ -74,11 +78,14 @@ class DatabaseInsertor:
             node.save().addCallback(self.__node_created)
         else:
             if node.last_update < last_update:
+                logging.debug(
+                    "FROM insert_node: updating existing node %s new timestamp is %s" % (
+                        node.user_id, node.last_update))
                 attrs = {'address': address, 'port': port, 'last_update': last_update}
                 node.updateAttrs(attrs)
                 node.save().addCallback(self.__node_updated)
             else:
-                logging.debug("nodo inserito piu vecchio di quello già esistente")
+                logging.debug("FROM insert_node: existing is already the most recent update")
 
     def insert_node(self, node=None, user_id=None, address=None, port=None, last_update=None):
         if node is None:
