@@ -63,7 +63,7 @@ def printNodesDict(nodesDict):
 def convertReceivedNodeInKnownNode(receivedNode):
     bufNode=Known_node()
     bufNode.user_id=str(receivedNode.user_id)
-    bufNode.username=receivedNode.username
+    #bufNode.username=receivedNode.username
     bufNode.address=receivedNode.address
     bufNode.port=receivedNode.port
     bufNode.last_update=receivedNode.last_update
@@ -75,7 +75,9 @@ class remoteConnection:
         self.node=node
         reactor.connectTCP(getAddressFromNode(node), int(node.port),clientFactory)
         self.rootRemoteReference=None
+        print(self.node.port)
         self.rootDeferred=clientFactory.getRootObject()
+        print(self.node.port)
         pass
 
     def query(self, method, methodArgs=None, callback=None, callbackArgs=None):
@@ -83,7 +85,7 @@ class remoteConnection:
             self.__waitForRootCallback(self.rootRemoteReference, method, methodArgs, callback, callbackArgs)
         else:
             self.rootDeferred.addCallback(self.__waitForRootCallback, method, methodArgs, callback, callbackArgs)
-            self.rootDeferred.addErrback(self.__Errback)
+            self.rootDeferred.addErrback(self.__Errback, self.node)
         pass
 
     def __waitForRootCallback(self, rootRemoteRef, method,  methodArgs, callback, callbackArgs):
@@ -91,12 +93,12 @@ class remoteConnection:
         deferredObj=rootRemoteRef.callRemote(method, *methodArgs)
         if callback is not None:
             deferredObj.addCallback(callback, *callbackArgs)
-        deferredObj.addErrback(self.__Errback)
+        deferredObj.addErrback(self.__Errback, self.node)
         return rootRemoteRef
         pass
     
-    def __Errback(self, reason):
-        print("Errback called in remoteConnection istance reason: "+str(reason))
+    def __Errback(self, reason, remoteNode):
+        print("Errback called in remoteConnection istance connecting to: "+str(remoteNode.port))
         pass
 
 class nodeConnections:
@@ -104,12 +106,14 @@ class nodeConnections:
         self.connections=dict()
         #self.clientFactory=pb.PBClientFactory()
     def connect(self, node):
+        node=convertReceivedNodeInKnownNode(node)
         if self.connections.has_key(node.user_id):
             return self.connections[node.user_id]
         else:
             self.connections[node.user_id]=remoteConnection(node, pb.PBClientFactory())
             return self.connections[node.user_id]
     def refresh(self, node):
+        node=convertReceivedNodeInKnownNode(node)
         self.connections[node.user_id]=remoteConnection(node, pb.PBClientFactory())
         return self.connections[node.user_id]
 
@@ -117,17 +121,13 @@ class node(pb.Root):
     def __init__(self, configFile):
         #start_logging()
         
-        #inizializzazione delle variabili di istanza:
         self.config=getDictFromFile(configFile, '=')
         self.dbpool=openConnectionOnDB(self.config["db_name"],self.config["db_port"],self.config["db_user"],self.config["db_password"],self.config["db_address"])
         
         self.insertor=DatabaseInsertor(self.dbpool)
         self.interrogator=DatabaseInterrogator(self.dbpool)
         self.currentConnections=nodeConnections()
-        #----------------------------------------------------------------
         
-        #self.insertor.insert_my_user(self.config["peer_user"])
-        #-----------------------------------------------------------------
         reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
         pass
     
@@ -184,38 +184,45 @@ class node(pb.Root):
         pass
         
     def remote_passNode(self, callerNode,  passedNode):
+        print("Risposta alla richiesta di risoluzione:")
         self.incomingConnection(callerNode)
         self.insertor.insert_node(passedNode)
         self.currentConnections.refresh(passedNode)
         pass
 
-    def remote_resolveUserID(self, callerNode,  targetUid,  timeToLive):
+    def remote_resolveUserID(self, callerNode, solverNode,  targetUid,  timeToLive):
         callerNode=convertReceivedNodeInKnownNode(callerNode)
+        solverNode=convertReceivedNodeInKnownNode(solverNode)
+        print("Richiesta di risoluzione inoltrata da:")
         self.incomingConnection(callerNode)
         myNodeDeferred=self.getMyNode()
         checkNodeDeferred=self.interrogator.get_node(targetUid)
         starter=DeferredList([myNodeDeferred, checkNodeDeferred])
-        starter.addCallback(self.__isNodeKnown, callerNode, targetUid, timeToLive)
+        starter.addCallback(self.__isNodeKnown, solverNode, targetUid, timeToLive)
         pass
     
-    def __isNodeKnown(self, result, callerNode, targetUid, timeToLive):
+    def __isNodeKnown(self, result, solverNode, targetUid, timeToLive):
         myNode=result[0][1]
         nodeFound=result[1][1]
         
         if nodeFound is not None:
-            c=self.currentConnections.connect(callerNode)
+            c=self.currentConnections.connect(solverNode)
             c.query("passNode",[myNode , nodeFound ])
         elif timeToLive>0:
             timeToLive=timeToLive-1
             #deferredKnownNodes=self.interrogator.get_known_nodes(callerNode)
             deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
-            deferredKnownNodes.addCallback(self.__forwardToKnownNodes, callerNode, targetUid, timeToLive)
+            deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode,  solverNode, targetUid, timeToLive)
         pass
     
-    def __forwardToKnownNodes(self, knownNodes,callerNode, targetUid, timeToLive ):
+    def __forwardToKnownNodes(self, knownNodes,myNode, solverNode, targetUid, timeToLive ):
+        print("**************************************")
+        print("inoltro a:")
+        printNodesDict(knownNodes)
+        print("**************************************")
         for i in knownNodes:
             c=self.currentConnections.connect(knownNodes[i])
-            c.query("resolveUserID", [callerNode, targetUid, timeToLive])
+            c.query("resolveUserID", [myNode, solverNode, targetUid, timeToLive])
         pass
     
     def populateKnownNodes(self):
@@ -225,16 +232,17 @@ class node(pb.Root):
         self.interrogator.get_known_nodes().addCallback(self.__convertUuidType, currentKnownNodesDeferred)
         starter=DeferredList([currentKnownNodesDeferred,  myNodeDeferred])
         starter.addCallback(self.__waitForStartCondition)
-        currentKnownNodesDeferred.addErrback(self.__printErrorErrback)
+        #currentKnownNodesDeferred.addErrback(self.__printErrorErrback)
         pass
     
     def __waitForStartCondition(self, starter):
         visitedNodesDict=dict()
         self.getAllKnownNodes(starter[0][1], visitedNodesDict, starter[1][1])
-    
-    def __printErrorErrback(self, result):
-        print("errback: "+result)
         pass
+#    
+#    def __printErrorErrback(self, result):
+#        print("errback: "+result)
+#        pass
     
     def getAllKnownNodes(self,nodesDict, visitedNodesDict, myNode):
         notVisitedNodesDict=dict()
@@ -289,7 +297,7 @@ class node(pb.Root):
     def __getPostsAndCommentsErrback(self, reason, myNode, friendNotReachable):
         timeToLive=int(self.config["peer_time_to_live"])
         deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
-        deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode, friendNotReachable.user_id, timeToLive)
+        deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode,  myNode, friendNotReachable.user_id, timeToLive)
         pass
     
     def resolve(self, uuid):
