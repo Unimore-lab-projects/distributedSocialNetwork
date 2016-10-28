@@ -15,6 +15,9 @@ from distributedSocialNetwork.DbManagement.debug_messages import *
 from datetime import datetime
 
 
+class postPackageReceivedCopy(PostPackage,  pb.RemoteCopy):
+    pass
+
 class nodeReceivedCopy(Known_node,  pb.RemoteCopy):
     pass
 
@@ -24,14 +27,11 @@ class postReceivedCopy(Post,  pb.RemoteCopy):
 class commentReceivedCopy(Comment,  pb.RemoteCopy):
     pass
 
-class postPackageReceivedCopy(PostPackage,  pb.RemoteCopy):
-    pass
 
-
+pb.setUnjellyableForClass(PostPackage, postPackageReceivedCopy)
 pb.setUnjellyableForClass(Known_node, nodeReceivedCopy)
 pb.setUnjellyableForClass(Post, postReceivedCopy)
 pb.setUnjellyableForClass(Comment, postReceivedCopy)
-pb.setUnjellyableForClass(PostPackage, postReceivedCopy)
 
 
 
@@ -213,14 +213,17 @@ class node(pb.Root):
     
     def __convertPostPackageUuidType(self,  postPackageLIst, result):
         
+        
         for package in postPackageLIst:
             print(package[1].getPost())
             package[1].getPost().user_id=convertUuid(package[1].getPost().user_id)
             comments=package[1].getComments()
             for comment in comments:
                 comment.user_id=convertUuid(comment.user_id)
+            
+       
 
-        result.callback(postPackageLIst)
+        result.callback(postPackageList)
         pass
     
     def remote_passNode(self, callerNode,  passedNode):
@@ -364,7 +367,7 @@ class node(pb.Root):
 #                post=convertPost(post)
         for i in timeline:
             for j in i[1]:
-                print(j[1])
+                print(j[1]).getPost().text_content
         result.callback(timeline)
         pass
     
