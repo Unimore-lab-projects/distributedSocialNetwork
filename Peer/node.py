@@ -177,7 +177,7 @@ class node(pb.Root):
     def remote_getKnownNodes(self, callerNode):
         result=Deferred()
         self.incomingConnection(callerNode)
-        self.interrogator.get_known_nodes(callerNode).addCallback(self.__convertUuidType, result)
+        self.interrogator.get_known_nodes(callerNode).addCallback(self.__convertKnownNodeUuidType, result)
         return result
         pass
     
@@ -272,7 +272,7 @@ class node(pb.Root):
         myNodeDeferred=self.getMyNode()
         #currentKnownNodesDeferred=self.interrogator.get_known_nodes()
         currentKnownNodesDeferred=Deferred()
-        self.interrogator.get_known_nodes().addCallback(self.__convertUuidType, currentKnownNodesDeferred)
+        self.interrogator.get_known_nodes().addCallback(self.__convertKnownNodeUuidType, currentKnownNodesDeferred)
         starter=DeferredList([currentKnownNodesDeferred,  myNodeDeferred])
         starter.addCallback(self.__waitForStartCondition)
         #currentKnownNodesDeferred.addErrback(self.__printErrorErrback)
