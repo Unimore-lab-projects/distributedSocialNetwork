@@ -6,6 +6,7 @@ from twisted.python import log
 from db_interrogator import *
 from debug_messages import *
 from twisted.internet import defer, reactor
+import random
 
 
 class DatabaseInsertor:
@@ -57,14 +58,16 @@ class DatabaseInsertor:
             logging.error('FROM insert_node: %s errors in node creation' % len(node.errors))
             logging.error(node.errors)
         else:
-            logging.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
+            logging.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (
+            node.user_id, node.address, node.port))
 
     def __node_updated(self, node):
         if len(node.errors) > 0:
             logging.error('FROM insert_node: %s errors in node update' % len(node.errors))
             logging.error(node.errors)
         else:
-            logging.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (node.user_id, node.address, node.port))
+            logging.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (
+            node.user_id, node.address, node.port))
 
     def __update_node(self, node, user_id, address, port, last_update):
         if node is None:
@@ -149,7 +152,7 @@ class DatabaseInsertor:
     def __save_new_post(self, my_user, text_content, path_to_imagefile):
         post = Post()
         post.user_id = my_user.user_id
-        post.post_id = int(time.time())
+        post.post_id = int(str(int(time.time())) + str(random.randint(0, 99999)))
         post.text_content = text_content
         post.path_to_imagefile = path_to_imagefile
         return post.save().addCallback(self.__done_save_post)
