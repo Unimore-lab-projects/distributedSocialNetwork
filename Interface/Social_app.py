@@ -124,7 +124,7 @@ class RootWidget(FloatLayout):
 
         # modifica inserimento commenti come vettore di label
         # formato del tipo "%s : %s" % (comment.user_id, comment.content)
-        commentList = ["very nice!", "bla bla bla", "it's ok!", "beautiful pic"]
+        commentList = ["Commento!", "com mento2...", "COMMENto commento3!", "Commentooooo4"]
 
         commenti=Comments(commentList)
         self.add_widget(commenti)
