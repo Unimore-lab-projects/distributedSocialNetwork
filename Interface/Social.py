@@ -14,8 +14,6 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.dropdown import DropDown
 
 
-from kivy.metrics import sp
-val = sp(1)
 from kivy.config import Config
 Config.set('graphics', 'fullscreen', 'auto')
 
@@ -23,9 +21,11 @@ Config.set('graphics', 'fullscreen', 'auto')
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
 ab=ActionButton(icon= 'bianco.png')
+ab2=ActionButton(icon='refresh2.png')
 bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
 aw=ActionView()
 aw.add_widget(ap)
+aw.add_widget(ab2)
 aw.add_widget(ab)
 bar.add_widget(aw)
 
@@ -252,11 +252,11 @@ class MyWidget(FloatLayout):
                                     pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp')
         self.searchuser.bind(on_text_validate=self.on_enter2)
 
-        self.searchbtn = ImageButton("little2.jpg")
+        self.searchbtn = ImageButton("srch.png")
         self.searchbtn.size_hint = (None, None)
-        self.searchbtn.width = 25
+        self.searchbtn.width = 80
         self.searchbtn.height = 25
-        self.searchbtn.pos_hint = {'center_x': 0.54, 'top': 0.996}
+        self.searchbtn.pos_hint = {'center_x': 0.545, 'top': 0.996}
         self.searchbtn.font_size = '12sp'
         # searchbtn.on_press=self.btn2_pressed
 
@@ -275,12 +275,21 @@ class MyWidget(FloatLayout):
         # DropDownMenu
         dropdown = DropDown()
 
-        btn1 = Button(text=self.searchuser.text, size_hint_y=None, height=44)
+        btn1 = Button(text=self.searchuser.text, color=(0, 0, 255, 0.8), font_size='13sp',
+                      size_hint_y=None, height=22, background_color=(0, 0, 0, 0))
         btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
         dropdown.add_widget(btn1)
 
-        self.searchbtn.bind(on_release=dropdown.open)
-        dropdown.bind(on_select=lambda instance, x: setattr(self.searchbtn, 'text', x))
+        # for index in range(10):
+        #     #text=self.searchuser.text
+        #     btn1 = Button(text='Value %d' % index, color= (0,0,255,0.8), font_size='13sp',
+        #                   size_hint_y=None, height=22, background_color= (0, 0, 0, 0))
+        #     btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
+        #     dropdown.add_widget(btn1)
+
+        mainbutton=self.searchbtn
+        mainbutton.bind(on_release=dropdown.open)
+        dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
 
 class MySocialApp(App):
