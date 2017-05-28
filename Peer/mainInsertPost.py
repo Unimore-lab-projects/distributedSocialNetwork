@@ -1,6 +1,6 @@
 
 
-from node import *
+from distributedSocialNetwork.Peer.node import *
 import sys
 
 def main():

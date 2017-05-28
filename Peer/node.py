@@ -145,7 +145,7 @@ class node(pb.Root):
         self.interrogator=DatabaseInterrogator(self.dbpool)
         self.currentConnections=nodeConnections()
         
-        reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
+        #reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
         pass
     
     def incomingConnection(self, callerNode):
@@ -211,10 +211,10 @@ class node(pb.Root):
         
         pass
     
-    def __convertPostPackageUuidType(self,  postPackageLIst, result):
+    def __convertPostPackageUuidType(self,  postPackageList, result):
         
         
-        for package in postPackageLIst:
+        for package in postPackageList:
             print(package[1].getPost())
             package[1].getPost().user_id=convertUuid(package[1].getPost().user_id)
             comments=package[1].getComments()
@@ -300,6 +300,14 @@ class node(pb.Root):
                     self.insertor.insert_node(nodesDict[i])
                 pass
             
+#        for i in nodesDict:
+#            if len(visitedNodesDict)>=int(self.config("peer_known_nodes_treshold")):
+#                break
+#            if((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id==myNode.user_id)):
+#                notVisitedNodesDict[i]=nodesDict[i]                    
+#                self.insertor.insert_node(nodesDict[i])
+#            pass
+#            
             print("nodi ricevuti:")
             printNodesDict(nodesDict)
             print("nodi visitati:")
@@ -308,6 +316,7 @@ class node(pb.Root):
             printNodesDict(notVisitedNodesDict)
             
             for i in notVisitedNodesDict:
+                visitedNodesDict[i]=notVisitedNodesDict[i]
                 connection=self.currentConnections.connect(notVisitedNodesDict[i])
                 connection.query("getKnownNodes",[myNode],  self.getAllKnownNodes, [visitedNodesDict, myNode])
                 print("visiting address: "+notVisitedNodesDict[i].address+" port: "+str(notVisitedNodesDict[i].port)+" user_id: "+str(notVisitedNodesDict[i].user_id))
@@ -317,7 +326,8 @@ class node(pb.Root):
     def buildTimeline(self):
         result=Deferred()
         myNodeDeferred=self.getMyNode()
-        myFriendsDeferred=self.interrogator.get_friends()
+#        myFriendsDeferred=self.interrogator.get_friends()
+        myFriendsDeferred=self.interrogator.get_known_nodes()
         starter=DeferredList([myNodeDeferred, myFriendsDeferred])
         starter.addCallback(self.__getAllPostsAndComments,int(self.config["peer_default_timeline_days"]),  result)
         return result
@@ -331,18 +341,21 @@ class node(pb.Root):
         
         print("****************************************")
         print("Amici a cui richiedo i post:")
-        printNodesDict(myFriends)
+        if myFriends is not None:
+            printNodesDict(myFriends)
+            
+            for i in myFriends:
+                c=self.currentConnections.connect(myFriends[i])
+                rootDeferreds.append(c.rootDeferred)
+                #c.rootDeferred.addCallback(self.__getPostsAndCommentsCallback, myNode, days,  timeline)
+                c.rootDeferred.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
+        
+            rootDeferredList=DeferredList(rootDeferreds)
+            rootDeferredList.addCallback(self.__getPostsAndCommentsCallback, myNode, days, result)
+            #rootDeferredList.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
+        else:
+            print('Nessun amico trovato')
         print("****************************************")
-        
-        for i in myFriends:
-            c=self.currentConnections.connect(myFriends[i])
-            rootDeferreds.append(c.rootDeferred)
-#            c.rootDeferred.addCallback(self.__getPostsAndCommentsCallback, myNode, days,  timeline)
-            c.rootDeferred.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
-        
-        rootDeferredList=DeferredList(rootDeferreds)
-        rootDeferredList.addCallback(self.__getPostsAndCommentsCallback, myNode, days, result)
-        #rootDeferredList.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
         
         pass
     
@@ -350,7 +363,7 @@ class node(pb.Root):
 #        timeline.append(remoteReference.callRemote("getPostsAndComments", myNode, days))
         timeline=[]
         for i in remoteReferenceList:
-            if i[0]:
+            if i[0] and (i[1] is not None):
                 timeline.append(i[1].callRemote("getPostsAndComments", myNode, days))
 #            else:
 #                timeToLive=int(self.config["peer_time_to_live"])
@@ -365,10 +378,13 @@ class node(pb.Root):
 #        for postList in timeline:
 #            for post in postList[1]:
 #                post=convertPost(post)
-        for i in timeline:
-            for j in i[1]:
-                print(j[1]).getPost().text_content
-        result.callback(timeline)
+        result_timeline=[]
+
+        for postList_tuple in timeline:
+            for post_package_tuple in postList_tuple[1]:
+                print(post_package_tuple[1]).getPost().text_content
+                result_timeline.append(post_package_tuple[1])
+        result.callback(result_timeline)
         pass
     
     def __getPostsAndCommentsErrback(self, reason, myNode, friendNotReachable):
