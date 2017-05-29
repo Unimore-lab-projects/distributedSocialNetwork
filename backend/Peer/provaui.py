@@ -1,3 +1,14 @@
+
+from kivy.support import install_twisted_reactor
+install_twisted_reactor()
+
+from  distributedSocialNetwork.Peer.node import node
+
+from twisted.internet import reactor
+
+from twisted.spread import pb
+
+
 from kivy.app import App
 from kivy.uix.actionbar import ActionPrevious, ActionButton, ActionBar, ActionView
 
@@ -14,20 +25,20 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.dropdown import DropDown
 
 
+from kivy.metrics import sp
+val = sp(1)
 from kivy.config import Config
 Config.set('graphics', 'fullscreen', 'auto')
 
 
 #layout actionbar
-ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
-ab=ActionButton(icon= 'bianco.png')
-ab2=ActionButton(icon='refresh2.png')
-bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
-aw=ActionView()
-aw.add_widget(ap)
-aw.add_widget(ab2)
-aw.add_widget(ab)
-bar.add_widget(aw)
+#ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
+#ab=ActionButton(icon= 'bianco.png')
+#bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
+#aw=ActionView()
+#aw.add_widget(ap)
+#aw.add_widget(ab)
+#bar.add_widget(aw)
 
 class Comments(GridLayout):
     def __init__(self, commentList, **kwargs):
@@ -38,7 +49,7 @@ class Comments(GridLayout):
         self.size_hint=(0.5,0.5)
         self.pos_hint = {'center_x': 0.6, 'center_y': 0.8}
         for comment in commentList:
-            textComment = Label(text=comment, color=(0, 0, 255, 1), halign='left', font_size='15sp',
+            textComment = Label(text=comment.content, color=(0, 0, 255, 1), halign='left', font_size='15sp',
                                 size_hint=(1.0, 1.0),
                                 pos_hint={'center_x': 0.5, 'top': 0.800})
             self.add_widget(textComment)
@@ -51,15 +62,15 @@ La classe contiene il contatore dei like, il bottone dei like, il textinput per 
 serve anche per gestire i posizionamentitra l'immagine e il corpo del post! 
 """
 class Body(FloatLayout):
-    def __init__(self, *args):
+    def __init__(self, user_name, comment_list, *args):
         super(Body, self).__init__(*args)
 
         self.size_hint=(None, None)
         self.width= 250
         self.height=200
 
-        nomeutente="user_name"
-        self.add_widget(Label(text=nomeutente, color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
+        #nomeutente="user_name"
+        self.add_widget(Label(text=user_name, color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
                                width=18, height=18, pos_hint={'x': 0.15, 'top': 3}))
 
         #contatore "like"
@@ -100,9 +111,9 @@ class Body(FloatLayout):
 
         #inserimento commenti come vettore di label
 
-        commentList = ["Commento!", "com mento2...", "COMMENto\ncommento3!", "Commentooooo4"]
+        #commentList = ["Commento!", "com mento2...", "COMMENto\ncommento3!", "Commentooooo4"]
 
-        commenti=Comments(commentList)
+        commenti=Comments(comment_list)
         self.add_widget(commenti)
 
     def btn_pressed(self, *args):
@@ -173,7 +184,7 @@ class PostImage(BoxLayout):
 
 # tipo post: solo testo
 class PostText(BoxLayout):
-    def __init__(self, my_text, *args):
+    def __init__(self, post_package, *args):
         super(PostText, self).__init__(*args)
 
         # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
@@ -195,8 +206,9 @@ class PostText(BoxLayout):
         self.pos_hint = {'center_x': 0.55, 'top': 0.95}
         self.spacing = 0
 
-        self.add_widget(MyText(my_text))
-        self.add_widget(Body())
+        print post_package
+        self.add_widget(MyText(post_package.getPost().text_content))
+        self.add_widget(Body(post_package.getPost().user_id, post_package.getComments()))
 
 #immagini come bottoni
 class ImageButton(ButtonBehavior, Image):
@@ -207,7 +219,7 @@ class ImageButton(ButtonBehavior, Image):
 
 #Timeline: contiene tutti i post degli utenti uno sotto all'altro
 class Timeline(BoxLayout):
-    def __init__(self, *args):
+    def __init__(self, post_package_list, *args):
         super(Timeline, self).__init__(*args)
         # self.ap.clear_widgets()
 
@@ -216,15 +228,18 @@ class Timeline(BoxLayout):
         self.spacing=10
         self.size_hint=(None,None)
         self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
+        
+        for post_package in post_package_list:
+            self.add_widget(PostText(post_package))
 
-        self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        self.add_widget(PostImage("magic.jpg"))
+#        self.add_widget(PostImage("magic.jpg"))
+#        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+#        self.add_widget(PostImage("magic.jpg"))
 
 
 
 class MyWidget(FloatLayout):
-    def __init__(self, *args):
+    def __init__(self, buildTimeline, *args):
         super(MyWidget, self).__init__(*args)
         # self.ap.clear_widgets()
 
@@ -245,6 +260,16 @@ class MyWidget(FloatLayout):
         self.width = 1024
         self.height = 4000
 
+        ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
+        ab=ActionButton(icon= 'bianco.png')
+        ab2=ActionButton(icon='refresh2.png')
+        bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
+        aw=ActionView()
+        aw.add_widget(ap)
+        aw.add_widget(ab)
+        aw.add_widget(ab2)
+        bar.add_widget(aw)
+
         self.add_widget(bar)
 
         # layout ricerca utenti
@@ -252,56 +277,71 @@ class MyWidget(FloatLayout):
                                     pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp')
         self.searchuser.bind(on_text_validate=self.on_enter2)
 
-        self.searchbtn = ImageButton("srch.png")
+        self.searchbtn = ImageButton("little2.jpg")
         self.searchbtn.size_hint = (None, None)
-        self.searchbtn.width = 80
+        self.searchbtn.width = 25
         self.searchbtn.height = 25
-        self.searchbtn.pos_hint = {'center_x': 0.545, 'top': 0.996}
+        self.searchbtn.pos_hint = {'center_x': 0.54, 'top': 0.996}
         self.searchbtn.font_size = '12sp'
         # searchbtn.on_press=self.btn2_pressed
 
         self.add_widget(self.searchuser)
         self.add_widget(self.searchbtn)
 
-
-        self.add_widget(Timeline())
+        self.buildTimeline=buildTimeline
+        self.refresh_timeline()
+        
+        
+        #self.add_widget(Timeline())
 
         #sv = ScrollView(do_scroll_x=True, do_scroll_y=False)
         #sv.add_widget(Timeline())
         # self.add_widget(sv)
-
+    
+    def refresh_timeline(self):
+        deferredList=self.buildTimeline()
+        deferredList.addCallback(self.__got_timeline)
+        pass
+    
+    def __got_timeline(self, post_package_list):
+        self.current_timeline=Timeline(post_package_list)
+        self.add_widget(self.current_timeline)
+        pass
 
     def on_enter2(self, *args):
         # DropDownMenu
         dropdown = DropDown()
 
-        btn1 = Button(text=self.searchuser.text, color=(0, 0, 255, 0.8), font_size='13sp',
-                      size_hint_y=None, height=22, background_color=(0, 0, 0, 0))
+        btn1 = Button(text=self.searchuser.text, size_hint_y=None, height=44)
         btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
         dropdown.add_widget(btn1)
 
-        # for index in range(10):
-        #     #text=self.searchuser.text
-        #     btn1 = Button(text='Value %d' % index, color= (0,0,255,0.8), font_size='13sp',
-        #                   size_hint_y=None, height=22, background_color= (0, 0, 0, 0))
-        #     btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
-        #     dropdown.add_widget(btn1)
-
-        mainbutton=self.searchbtn
-        mainbutton.bind(on_release=dropdown.open)
-        dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
+        self.searchbtn.bind(on_release=dropdown.open)
+        dropdown.bind(on_select=lambda instance, x: setattr(self.searchbtn, 'text', x))
 
 
-class MySocialApp(App):
+class MySocialApp(App, pb.Root):
+    
+    def __init__(self, mainWidget):
+        super(MySocialApp, self).__init__()
+        self.mainWidget=mainWidget
+        pass
+    
     def build(self):
+        reactor.listenTCP(8003, pb.PBServerFactory(self))
         sv = ScrollView(size_hint=(1,1),do_scroll_x=False, do_scroll_y=True)
-
-        sv.add_widget(MyWidget())
-
+        #sv.add_widget(MyWidget())
+        sv.add_widget(mainWidget)
+        
         return sv
 
 
 if __name__ == '__main__':
-    MySocialApp().run()
+    #MySocialApp().run()
+    thisNode=node('peer4.config')
+    thisNode.populateKnownNodes()
+    mainWidget=MyWidget(thisNode.buildTimeline)
+    app=MySocialApp(mainWidget)
+    app.run()
 
 
