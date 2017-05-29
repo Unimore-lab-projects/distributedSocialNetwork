@@ -5,7 +5,8 @@ import sys
 
 def main():
     this=node(sys.argv[1])
-    reactor.listenTCP(8001, pb.PBServerFactory(this))
+    this.insertor.insert_post(None,"Post1")
+    this.insertor.insert_post(None,"Post2")
     reactor.run()
 
 if __name__=='__main__':
