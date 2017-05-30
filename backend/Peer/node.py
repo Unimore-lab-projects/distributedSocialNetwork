@@ -268,6 +268,15 @@ class node(pb.Root):
             c.query("resolveUserID", [myNode, solverNode, targetUid, timeToLive])
         pass
     
+    def remote_insertComment(self):
+        pass
+    
+    def insertComment(self):
+        pass
+    
+    def insertPost(self):
+        pass
+    
     def populateKnownNodes(self):
         myNodeDeferred=self.getMyNode()
         #currentKnownNodesDeferred=self.interrogator.get_known_nodes()
