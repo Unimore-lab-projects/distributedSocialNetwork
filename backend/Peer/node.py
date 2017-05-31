@@ -154,7 +154,7 @@ class node(pb.Root):
         pass
     
     def getPort(self):
-        return self.config['peer_port']
+        return int(self.config['peer_port'])
         pass
     
     def getMyNode(self):
