@@ -94,7 +94,7 @@ class remoteConnection:
         self.rootRemoteReference=None
         #try
         self.rootDeferred=clientFactory.getRootObject()
-        #ecception
+        #exception
         pass
 
     def query(self, method, methodArgs=None, callback=None, callbackArgs=None):
@@ -121,7 +121,6 @@ class remoteConnection:
 class nodeConnections:
     def __init__(self):
         self.connections=dict()
-        #self.clientFactory=pb.PBClientFactory()
     def connect(self, node):
         node=convertReceivedNodeInKnownNode(node)
         if self.connections.has_key(node.user_id):
@@ -153,7 +152,11 @@ class node(pb.Root):
             str(callerNode.address)+" "+str(callerNode.port))
         self.insertor.insert_node(callerNode)
         pass
-
+    
+    def getPort(self):
+        return self.config['peer_port']
+        pass
+    
     def getMyNode(self):
         result=Deferred()
         self.insertor.insert_my_user(self.config["peer_user"]).addCallback(self.__getMyUser,  result)
@@ -253,7 +256,6 @@ class node(pb.Root):
             c.query("passNode",[myNode , nodeFound ])
         elif timeToLive>0:
             timeToLive=timeToLive-1
-            #deferredKnownNodes=self.interrogator.get_known_nodes(callerNode)
             deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
             deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode,  solverNode, targetUid, timeToLive)
         pass
@@ -274,61 +276,47 @@ class node(pb.Root):
     def insertComment(self):
         pass
     
-    def insertPost(self):
+    def insertPost(self, post=None, text_content=None, path_to_imagefile=None):
+        self.insertor.insert_post(post, text_content, path_to_imagefile)
         pass
     
     def populateKnownNodes(self):
         myNodeDeferred=self.getMyNode()
-        #currentKnownNodesDeferred=self.interrogator.get_known_nodes()
         currentKnownNodesDeferred=Deferred()
         self.interrogator.get_known_nodes().addCallback(self.__convertKnownNodeUuidType, currentKnownNodesDeferred)
         starter=DeferredList([currentKnownNodesDeferred,  myNodeDeferred])
         starter.addCallback(self.__waitForStartCondition)
-        #currentKnownNodesDeferred.addErrback(self.__printErrorErrback)
         pass
     
     def __waitForStartCondition(self, starter):
         visitedNodesDict=dict()
         self.getAllKnownNodes(starter[0][1], visitedNodesDict, starter[1][1])
         pass
-#    
-#    def __printErrorErrback(self, result):
-#        print("errback: "+result)
-#        pass
-    
+
     def getAllKnownNodes(self,nodesDict, visitedNodesDict, myNode):
         notVisitedNodesDict=dict()
         
-        if(len(nodesDict)<int(self.config["peer_known_nodes_threshold"])):
-            for i in nodesDict:
-                if((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id==myNode.user_id)):
-                    visitedNodesDict[i]=nodesDict[i]
-                    notVisitedNodesDict[i]=nodesDict[i]
-                    #print(nodesDict[i])
+        #if(len(visitedNodesDict)<int(self.config["peer_known_nodes_threshold"])):
+        for i in nodesDict:
+            if((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id==myNode.user_id)):
+                visitedNodesDict[i]=nodesDict[i]
+                notVisitedNodesDict[i]=nodesDict[i]
                     
-                    self.insertor.insert_node(nodesDict[i])
-                pass
+                self.insertor.insert_node(nodesDict[i])
+            pass
             
-#        for i in nodesDict:
-#            if len(visitedNodesDict)>=int(self.config("peer_known_nodes_treshold")):
-#                break
-#            if((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id==myNode.user_id)):
-#                notVisitedNodesDict[i]=nodesDict[i]                    
-#                self.insertor.insert_node(nodesDict[i])
-#            pass
-#            
-            print("nodi ricevuti:")
-            printNodesDict(nodesDict)
-            print("nodi visitati:")
-            printNodesDict(visitedNodesDict)
-            print("nodi da visitare:")
-            printNodesDict(notVisitedNodesDict)
+        print("nodi ricevuti:")
+        printNodesDict(nodesDict)
+        print("nodi visitati:")
+        printNodesDict(visitedNodesDict)
+        print("nodi da visitare:")
+        printNodesDict(notVisitedNodesDict)
             
-            for i in notVisitedNodesDict:
-                visitedNodesDict[i]=notVisitedNodesDict[i]
-                connection=self.currentConnections.connect(notVisitedNodesDict[i])
-                connection.query("getKnownNodes",[myNode],  self.getAllKnownNodes, [visitedNodesDict, myNode])
-                print("visiting address: "+notVisitedNodesDict[i].address+" port: "+str(notVisitedNodesDict[i].port)+" user_id: "+str(notVisitedNodesDict[i].user_id))
+        for i in notVisitedNodesDict:
+            visitedNodesDict[i]=notVisitedNodesDict[i]
+            connection=self.currentConnections.connect(notVisitedNodesDict[i])
+            connection.query("getKnownNodes",[myNode],  self.getAllKnownNodes, [visitedNodesDict, myNode])
+            print("visiting address: "+notVisitedNodesDict[i].address+" port: "+str(notVisitedNodesDict[i].port)+" user_id: "+str(notVisitedNodesDict[i].user_id))
         
     pass
     
@@ -356,12 +344,10 @@ class node(pb.Root):
             for i in myFriends:
                 c=self.currentConnections.connect(myFriends[i])
                 rootDeferreds.append(c.rootDeferred)
-                #c.rootDeferred.addCallback(self.__getPostsAndCommentsCallback, myNode, days,  timeline)
                 c.rootDeferred.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
         
             rootDeferredList=DeferredList(rootDeferreds)
             rootDeferredList.addCallback(self.__getPostsAndCommentsCallback, myNode, days, result)
-            #rootDeferredList.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
         else:
             print('Nessun amico trovato')
         print("****************************************")
@@ -369,24 +355,16 @@ class node(pb.Root):
         pass
     
     def __getPostsAndCommentsCallback(self, remoteReferenceList, myNode,  days,  result):
-#        timeline.append(remoteReference.callRemote("getPostsAndComments", myNode, days))
         timeline=[]
         for i in remoteReferenceList:
             if i[0] and (i[1] is not None):
                 timeline.append(i[1].callRemote("getPostsAndComments", myNode, days))
-#            else:
-#                timeToLive=int(self.config["peer_time_to_live"])
-#                deferredKnownNodes=self.interrogator.get_known_nodes(myNode)
-#                deferredKnownNodes.addCallback(self.__forwardToKnownNodes, myNode,  myNode, friendNotReachable.user_id, timeToLive)
 
         timelineDeferred=DeferredList(timeline)
         timelineDeferred.addCallback(self.__waitForTimeline, result)
         pass
     
     def __waitForTimeline(self, timeline, result):
-#        for postList in timeline:
-#            for post in postList[1]:
-#                post=convertPost(post)
         result_timeline=[]
 
         for postList_tuple in timeline:
