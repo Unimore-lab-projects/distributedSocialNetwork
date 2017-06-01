@@ -135,8 +135,10 @@ class MyText(Label):
         self.text = mytext
         self.font_size="16sp"
         self.color=(0,0,0,1)
-        self.size_hint = (1, None)
+        self.size_hint = (1, 1)
         self.halign='left'
+        self.pos_hint = {'center_y': 0.5, 'top': 1}
+
 
         #non valgono per il boxlayout
         #self.pos=(self.x+470, self.y+160)
@@ -191,7 +193,7 @@ class PostText(BoxLayout):
         self.orientation = 'vertical'
         self.size_hint = (None, None)
         self.width = 450
-        self.height = 300
+        self.height = 600
         self.pos_hint = {'center_x': 0.55, 'top': 0.95}
         self.spacing = 0
 
@@ -214,12 +216,15 @@ class Timeline(BoxLayout):
         self.orientation='vertical'
         # prova: aggiungo immagine o testo
         self.spacing=10
-        self.size_hint=(None,None)
-        self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
+        self.size_hint=(1,1)
+        #self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
 
-        self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        self.add_widget(PostImage("magic.jpg"))
+        #self.add_widget(PostImage("magic.jpg"))
+        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        self.add_widget(PostText('dsfjskdjfkdsf sdkfjksdjf sdkfjkldfj sdkf'))
+        self.add_widget(PostText('dsfjskdjfkdsf sdkfjksdjf sdkfjkldfj sdkf\nwelkkdjewfld efljwefod oejfwld\nlsdfjlakjd sldkfjs\nlwadjlawdkjlkdfjesklf'))
+        self.add_widget(PostText('last text-----\nwhere\nare\nyou?'))
+        #self.add_widget(PostImage("magic.jpg"))
 
 
 
@@ -241,9 +246,9 @@ class MyWidget(FloatLayout):
         # aggiorna la posizione del rettangolo colorato/layout
         self.bind(pos=update_rect, size=update_rect)
 
-        self.size_hint = (None, None)
-        self.width = 1024
-        self.height = 4000
+        self.size_hint = (1, None)
+        #self.width = 1024
+        self.height = self.height+2700
 
         self.add_widget(bar)
 
