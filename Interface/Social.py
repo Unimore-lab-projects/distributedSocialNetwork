@@ -254,7 +254,7 @@ class MyWidget(FloatLayout):
 
         # layout ricerca utenti
         self.searchuser = TextInput(text="search user", multiline=False, size_hint=(None, None), width=100, height=25,
-                                    pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp')
+                                    pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp', background_normal='textinput2.png')
         self.searchuser.bind(on_text_validate=self.on_enter2)
 
         self.searchbtn = ImageButton("srch.png")

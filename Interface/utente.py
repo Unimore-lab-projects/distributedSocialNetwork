@@ -14,6 +14,58 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 
 
+class StatusBody(FloatLayout):
+    def __init__(self, *args):
+        super(StatusBody, self).__init__(*args)
+
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(255, 255, 255, 1)  # bianco
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo colorato/layout
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.size_hint = (None, None)
+        self.width = 400
+        self.height = 260
+        self.pos_hint={'left':1,'top':0.98}
+
+        self.add_widget(Image(source='bianco.png', size_hint=(None, None), pos_hint={'left': 0.5, 'top': 0.98}))
+        nomeutente = "user_name" + "\n"
+        bio = "Hello! These are my posts!"
+        self.add_widget(Label(text=nomeutente + bio, color=(0, 0, 255, 1), halign="left", size_hint=(None, None),
+                              pos_hint={'x': 0.40, 'top': 0.98}))
+
+
+        # inserimento status
+        self.status = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 255, 1), multiline=False, size_hint=(None, None),
+                                width=300, height=80, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp', background_normal='textinput2.png')
+        #status.bind(on_text_validate=self.on_enter)
+        self.add_widget(self.status)
+
+        """
+        attenzione!!! Le prossime 2 linee di codice si sovrappongono all'inserimento commenti 
+        di un vettore di label, se si inserisce un commento nel textinput (linee di codice successive).
+        """
+        # self.statustxt = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
+        # pos_hint={'center_x': 0.415, 'center_y': 1})
+        # self.add_widget(self.statustxt)
+
+        # inserimento commenti come vettore di label
+
+        # commentList = ["Commento!", "com mento2...", "COMMENto\ncommento3!", "Commentooooo4"]
+        #
+        # commenti=Comments(commentList)
+        # self.add_widget(commenti)
+
+
+        #def on_enter(self, *args):
+         #  self.statustxt.text = (self.statustxt.text + "\n" + self.txt.text)
 
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
@@ -123,11 +175,13 @@ class MyImage(Image):
 class MyText(Label):
     def __init__(self, mytext, *args):
         super(MyText, self).__init__(*args)
+
         self.text = mytext
         self.font_size = "16sp"
         self.color = (0, 0, 0, 1)
-        self.size_hint = (1, None)
+        self.size_hint = (1, 1)
         self.halign = 'left'
+        self.pos_hint = {'center_y': 0.5, 'top': 1}
 
         # non valgono per il boxlayout
         # self.pos=(self.x+470, self.y+160)
@@ -176,18 +230,19 @@ class PostText(BoxLayout):
             instance.rect.pos = instance.pos
             instance.rect.size = instance.size
 
-        # listen to size and position changes (aggiorno la posizione del rettangolo colorato/layout)
+        # aggiorna la posizione del rettangolo colorato/layout
         self.bind(pos=update_rect, size=update_rect)
 
         self.orientation = 'vertical'
         self.size_hint = (None, None)
         self.width = 450
-        self.height = 300
+        self.height = 600
         self.pos_hint = {'center_x': 0.55, 'top': 0.95}
         self.spacing = 0
 
         self.add_widget(MyText(my_text))
         self.add_widget(Body())
+
 
 #immagini come bottoni
 class ImageButton(ButtonBehavior, Image):
@@ -209,8 +264,8 @@ class Timeline(BoxLayout):
         self.size_hint=(None,None)
         self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
 
-        self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+       # self.add_widget(PostImage("magic.jpg"))
+        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
         self.add_widget(PostImage("magic.jpg"))
 
 
@@ -237,11 +292,8 @@ class MyWidget(FloatLayout):
 
         self.add_widget(bar)
 
-        self.add_widget(Image(source='bianco.png', size_hint=(None,None), pos_hint={'left':1,'top':0.98}))
-        nomeutente = "user_name"+"\n"
-        bio="Hello! These are my posts!"
-        self.add_widget(Label(text=nomeutente+bio, color=(0, 0, 255, 1), halign="left", size_hint=(None, None),
-                              pos_hint={'x': 0.10, 'top': 0.98}))
+        self.add_widget(StatusBody())
+
 
 
         # prova: aggiungo immagine o testo
@@ -265,3 +317,6 @@ class MySocialApp(App):
 
 if __name__ == '__main__':
     MySocialApp().run()
+
+
+
