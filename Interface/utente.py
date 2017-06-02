@@ -14,6 +14,7 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 
 
+#classe per pubblicare i post... contiene anche l'immagine utente e la bio
 class StatusBody(FloatLayout):
     def __init__(self, *args):
         super(StatusBody, self).__init__(*args)
@@ -45,27 +46,11 @@ class StatusBody(FloatLayout):
         # inserimento status
         self.status = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 255, 1), multiline=False, size_hint=(None, None),
                                 width=300, height=80, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp', background_normal='textinput2.png')
+
         #status.bind(on_text_validate=self.on_enter)
         self.add_widget(self.status)
 
-        """
-        attenzione!!! Le prossime 2 linee di codice si sovrappongono all'inserimento commenti 
-        di un vettore di label, se si inserisce un commento nel textinput (linee di codice successive).
-        """
-        # self.statustxt = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
-        # pos_hint={'center_x': 0.415, 'center_y': 1})
-        # self.add_widget(self.statustxt)
 
-        # inserimento commenti come vettore di label
-
-        # commentList = ["Commento!", "com mento2...", "COMMENto\ncommento3!", "Commentooooo4"]
-        #
-        # commenti=Comments(commentList)
-        # self.add_widget(commenti)
-
-
-        #def on_enter(self, *args):
-         #  self.statustxt.text = (self.statustxt.text + "\n" + self.txt.text)
 
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
