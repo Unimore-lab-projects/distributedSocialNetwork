@@ -14,44 +14,6 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 
 
-#classe per pubblicare i post... contiene anche l'immagine utente e la bio
-class StatusBody(FloatLayout):
-    def __init__(self, *args):
-        super(StatusBody, self).__init__(*args)
-
-        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
-        with self.canvas.before:
-            Color(255, 255, 255, 1)  # bianco
-            self.rect = Rectangle(size=self.size, pos=self.pos)
-
-        def update_rect(instance, value):
-            instance.rect.pos = instance.pos
-            instance.rect.size = instance.size
-
-        # aggiorna la posizione del rettangolo colorato/layout
-        self.bind(pos=update_rect, size=update_rect)
-
-        self.size_hint = (None, None)
-        self.width = 400
-        self.height = 260
-        self.pos_hint={'left':1,'top':0.98}
-
-        self.add_widget(Image(source='bianco.png', size_hint=(None, None), pos_hint={'left': 0.5, 'top': 0.98}))
-        nomeutente = "user_name" + "\n"
-        bio = "Hello! These are my posts!"
-        self.add_widget(Label(text=nomeutente + bio, color=(0, 0, 255, 1), halign="left", size_hint=(None, None),
-                              pos_hint={'x': 0.40, 'top': 0.98}))
-
-
-        # inserimento status
-        self.status = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 255, 1), multiline=False, size_hint=(None, None),
-                                width=300, height=80, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp', background_normal='textinput2.png')
-
-        #status.bind(on_text_validate=self.on_enter)
-        self.add_widget(self.status)
-
-
-
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
 ab=ActionButton(icon= 'home.png')
@@ -75,6 +37,50 @@ class Comments(GridLayout):
                                 pos_hint={'center_x': 0.5, 'top': 0.800})
             self.add_widget(textComment)
 
+
+# classe per pubblicare i post... contiene anche l'immagine utente e la bio
+class StatusBody(FloatLayout):
+    def __init__(self, *args):
+        super(StatusBody, self).__init__(*args)
+
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(255, 255, 255, 1)  # bianco
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo colorato/layout
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.size_hint = (None, None)
+        self.width = 400
+        self.height = 260
+        self.pos_hint = {'left': 1, 'top': 0.98}
+
+        self.add_widget(Image(source='bianco.png', size_hint=(None, None), pos_hint={'left': 0.5, 'top': 0.98}))
+        nomeutente = "user_name" + "\n"
+        bio = "Hello! These are my posts!"
+        self.add_widget(Label(text=nomeutente + bio, color=(0, 0, 255, 1), halign="left", size_hint=(None, None),
+                              pos_hint={'x': 0.40, 'top': 0.98}))
+
+        # inserimento status
+        self.statusin = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 255, 1), multiline=False,
+                                  size_hint=(None, None),
+                                  width=300, height=80, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp',
+                                  background_normal='textinput2.png')
+        self.statusout = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp',
+                               size_hint=(None, None),
+                               pos_hint={'x': 0.40, 'top': 0.35})
+        self.statusin.bind(on_text_validate=self.on_enter)
+
+        self.add_widget(self.statusin)
+        self.add_widget(self.statusout)
+
+    def on_enter(self, *args):
+        self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
 
 
 """classe che serve per gestire il corpo del post.
