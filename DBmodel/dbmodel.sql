@@ -79,7 +79,7 @@ CREATE SEQUENCE friends_id_seq
 
 CREATE TABLE friends (
     user_id uuid NOT NULL,
-    username character varying(16),
+    username character varying(32),
     id integer DEFAULT nextval('friends_id_seq'::regclass) NOT NULL
 );
 
@@ -94,7 +94,8 @@ CREATE TABLE known_nodes (
     address cidr NOT NULL,
     port smallint NOT NULL,
     last_update timestamp without time zone NOT NULL,
-    id integer NOT NULL
+    id integer NOT NULL,
+    username character varying(32)
 );
 
 
@@ -125,7 +126,7 @@ ALTER SEQUENCE known_nodes_id_seq OWNED BY known_nodes.id;
 
 CREATE TABLE my_user (
     user_id uuid NOT NULL,
-    username character varying(16),
+    username character varying(32),
     id integer NOT NULL
 );
 

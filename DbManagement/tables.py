@@ -15,6 +15,7 @@ Known_node.validatesUniquenessOf('user_id')
 Known_node.validatesPresenceOf('address')
 Known_node.validatesPresenceOf('port')
 Known_node.validatesPresenceOf('last_update')
+Known_node.validatesPresenceOf('username')
 
 
 class Friend(DBObject):

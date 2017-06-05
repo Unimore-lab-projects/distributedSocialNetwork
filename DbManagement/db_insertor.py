@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*
+import random
 import time
 from uuid import uuid4
+
 from psycopg2 import extras, extensions
-from twisted.python import log
+from twisted.internet import defer, reactor
+
 from db_interrogator import *
 from debug_messages import *
-from twisted.internet import defer, reactor
-import random
 
 
 class DatabaseInsertor:
@@ -59,7 +60,7 @@ class DatabaseInsertor:
             logging.error(node.errors)
         else:
             logging.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (
-            node.user_id, node.address, node.port))
+                node.user_id, node.address, node.port))
 
     def __node_updated(self, node):
         if len(node.errors) > 0:
@@ -67,13 +68,14 @@ class DatabaseInsertor:
             logging.error(node.errors)
         else:
             logging.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (
-            node.user_id, node.address, node.port))
+                node.user_id, node.address, node.port))
 
-    def __update_node(self, node, user_id, address, port, last_update):
+    def __update_node(self, node, username, user_id, address, port, last_update):
         if node is None:
             logging.debug("FROM insert_node: creating a new node")
             # node doesn't exists
             node = Known_node()
+            node.username = username
             node.user_id = user_id
             node.address = address
             node.port = port
@@ -90,14 +92,16 @@ class DatabaseInsertor:
             else:
                 logging.debug("FROM insert_node: existing is already the most recent update")
 
-    def insert_node(self, node=None, user_id=None, address=None, port=None, last_update=None):
+    def insert_node(self, node=None, username=None, user_id=None, address=None, port=None, last_update=None):
         if node is None:
-            Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address,
+            Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, username, user_id,
+                                                                               address,
                                                                                port,
                                                                                last_update)
         else:
             # if Node != None use it
             Known_node.find(where=['user_id=?', node.user_id], limit=1).addCallback(self.__update_node, node.user_id,
+                                                                                    node.username,
                                                                                     node.address, node.port,
                                                                                     node.last_update)
 

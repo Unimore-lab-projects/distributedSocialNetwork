@@ -24,8 +24,7 @@ class DatabaseInterrogator:
         ottiene il primo risulato in my_user. non devono esserci altre entry
         :return: oggetto My_user
         """
-        me = My_user()
-        return me.find(limit=1).addCallback(self.__done_my_user)
+        return My_user.find(limit=1).addCallback(self.__done_my_user)
 
     # known_nodes
 
