@@ -13,6 +13,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 
+testo_post="ciao"
 
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
@@ -57,7 +58,7 @@ class StatusBody(FloatLayout):
 
         self.size_hint = (None, None)
         self.width = 400
-        self.height = 260
+        self.height = 220
         self.pos_hint = {'left': 1, 'top': 0.98}
 
         self.add_widget(Image(source='bianco.png', size_hint=(None, None), pos_hint={'left': 0.5, 'top': 0.98}))
@@ -69,18 +70,31 @@ class StatusBody(FloatLayout):
         # inserimento status
         self.statusin = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 255, 1), multiline=False,
                                   size_hint=(None, None),
-                                  width=300, height=80, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp',
+                                  width=270, height=60, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp',
                                   background_normal='textinput2.png')
         self.statusout = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp',
                                size_hint=(None, None),
-                               pos_hint={'x': 0.40, 'top': 0.35})
+                               pos_hint={'x': 0.40, 'top': 0.20})
         self.statusin.bind(on_text_validate=self.on_enter)
 
         self.add_widget(self.statusin)
         self.add_widget(self.statusout)
 
-    def on_enter(self, *args):
+        self.btn_pub = Button(text="pubblica", size_hint=(None, None),
+                                  width=80, height=25, pos_hint={'x': 0.595, 'top': 0.20}, font_size='13sp',
+                                  background_normal='buttonbkgr.png')
+        self.btn_pub.on_press = self.btn_pressed
+        self.add_widget(self.btn_pub)
+
+    def btn_pressed(self, *args):
         self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
+
+
+    def on_enter(self, *args):
+        #self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
+        pass
+
+
 
 
 """classe che serve per gestire il corpo del post.
