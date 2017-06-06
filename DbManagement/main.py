@@ -9,7 +9,7 @@ from twistar.registry import Registry
 
 # logging necessario
 enable_logging()
-# InteractionBase.LOG = True
+InteractionBase.LOG = True
 log.startLogging(sys.stdout)
 # end logging
 
@@ -21,21 +21,23 @@ inser = DatabaseInsertor(dbpool)
 inter = DatabaseInterrogator(dbpool)
 Registry.DBPOOL = dbpool
 
+inser.insert_post(None, "Post1")
+inser.insert_post(None, "Post1")
+inser.insert_post(None, "Post1")
+inser.insert_post(None, "Post1")
 
-def ddd(pack):
-    print pack.post.text_content
-    for comment in pack.commentList:
-        print "     %s" % comment.content
-
-
-def done(res):
-    for r in res:
-        r.addCallback(ddd)
-
-
+# def ddd(pack):
+#     print pack.post.text_content
+#     for comment in pack.commentList:
+#         print "     %s" % comment.content
+#
+# def ddone(myuser):
+#     print myuser
+#
+# inter.get_my_user().addCallback(ddone)
 # inter.get_post_pack('1476291454').addCallback(done)
 # inter.get_recents(10).addCallback(done)
-inter.get_recents(10).addCallback(done)
+# inter.get_recents(10).addCallback(done)
 # d = defer.maybeDeferred(inter.get_recents, 10).addCallback(done)
 # reactor.callLater(2, d.addCallback, done)
 

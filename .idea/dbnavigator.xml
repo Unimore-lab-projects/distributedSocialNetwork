@@ -23,16 +23,7 @@
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
-    <loaded-nodes>
-      <connection connection-id="220a35f0-f340-4a56-a335-831a96a32093">
-        <schema name="pg_catalog" object-types="table, view" />
-        <schema name="public" object-types="column, constraint, function, index, sequence, table, dataset trigger, view" />
-      </connection>
-      <connection connection-id="0d1ed002-db82-4556-869a-5c4f00d3c12c">
-        <schema name="pg_catalog" object-types="function, table, view" />
-        <schema name="public" object-types="column, function, table, view" />
-      </connection>
-    </loaded-nodes>
+    <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="220a35f0-f340-4a56-a335-831a96a32093">
@@ -44,6 +35,9 @@
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
     <filter-list connection-id="220a35f0-f340-4a56-a335-831a96a32093" dataset="public.comments" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="220a35f0-f340-4a56-a335-831a96a32093" dataset="public.posts" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="220a35f0-f340-4a56-a335-831a96a32093" dataset="public.friends" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="220a35f0-f340-4a56-a335-831a96a32093" dataset="public.my_user" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
@@ -346,8 +340,11 @@
           <content-type name="DTD" enabled="true" />
           <content-type name="HTML" enabled="true" />
           <content-type name="XHTML" enabled="true" />
+          <content-type name="CSS" enabled="true" />
           <content-type name="SQL" enabled="true" />
           <content-type name="PL/SQL" enabled="true" />
+          <content-type name="JavaScript" enabled="true" />
+          <content-type name="YAML" enabled="true" />
         </content-types>
       </qualified-text-editor>
       <record-navigation>
