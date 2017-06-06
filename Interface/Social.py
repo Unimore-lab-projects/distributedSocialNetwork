@@ -85,10 +85,20 @@ class Body(FloatLayout):
         self.add_widget(description)
 
         #inserimento commenti
-        self.txt = TextInput(text="commenta", multiline=False, size_hint=(None, None), width= 90, height=27,
-                             pos_hint={'center_x':0.55, 'center_y': 1.2}, font_size='13sp')
-        self.txt.bind(on_text_validate=self.on_enter)
+        self.txt = TextInput(text="commenta", foreground_color=(0, 0, 0, 0.4), multiline=True, size_hint=(None, None), font_size='11sp',
+                             width= 95, height=25,
+                             pos_hint={'center_x':0.55, 'center_y': 1.2},
+                             background_normal = 'textinput2.png')
+        #validare con enter
+        #self.txt.bind(on_text_validate=self.on_enter)
         self.add_widget(self.txt)
+
+        self.btn_cmm=Button(text="ok", size_hint=(None, None), color=(0, 0, 0, 0.4),
+                      width=25, height=25, pos_hint={'center_x':0.78, 'center_y': 1.2}, font_size='13sp',
+                      background_normal='buttonbkgr.png')
+        self.btn_cmm.on_press = self.btn_pressed2
+        self.add_widget(self.btn_cmm)
+
 
         """
         attenzione!!! Le prossime 2 linee di codice si sovrappongono all'inserimento commenti 
@@ -109,9 +119,14 @@ class Body(FloatLayout):
         self.count += 1
         self.like_num.text = str(self.count)
 
-    def on_enter(self, *args):
-        self.comments.text = (self.comments.text + "\n" + self.txt.text)
+    #pubblica i commenti quando si preme invio
+    # def on_enter(self, *args):
+    #     self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
+    # funzione che pubblica i commenti cliccando sul bottone
+
+    def btn_pressed2(self, *args):
+        self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
 
 # caratteristiche predefinite dell'immagine di un tipo post: immagine
@@ -169,7 +184,7 @@ class PostImage(BoxLayout):
         self.pos_hint = {'center_x': 0.55, 'top': 0.95}
         self.spacing=0
 
-        self.add_widget(MyImage("magic.jpg"))
+        self.add_widget(MyImage(name_img))
         self.add_widget(Body())
 
 
@@ -219,12 +234,10 @@ class Timeline(BoxLayout):
         self.size_hint=(1,1)
         #self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
 
-        #self.add_widget(PostImage("magic.jpg"))
         self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        self.add_widget(PostText('dsfjskdjfkdsf sdkfjksdjf sdkfjkldfj sdkf'))
         self.add_widget(PostText('dsfjskdjfkdsf sdkfjksdjf sdkfjkldfj sdkf\nwelkkdjewfld efljwefod oejfwld\nlsdfjlakjd sldkfjs\nlwadjlawdkjlkdfjesklf'))
         self.add_widget(PostText('last text-----\nwhere\nare\nyou?'))
-        #self.add_widget(PostImage("magic.jpg"))
+        self.add_widget(PostImage("magic.jpg"))
 
 
 
@@ -253,8 +266,10 @@ class MyWidget(FloatLayout):
         self.add_widget(bar)
 
         # layout ricerca utenti
-        self.searchuser = TextInput(text="search user", multiline=False, size_hint=(None, None), width=100, height=25,
-                                    pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp', background_normal='textinput2.png')
+        self.searchuser = TextInput(text="search user", foreground_color=(0, 0, 0, 0.4), multiline=False,
+                                    size_hint=(None, None), width=100, height=25,
+                                    pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp',
+                                    background_normal='textinput2.png')
         self.searchuser.bind(on_text_validate=self.on_enter2)
 
         self.searchbtn = ImageButton("srch.png")

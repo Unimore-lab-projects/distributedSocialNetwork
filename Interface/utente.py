@@ -13,7 +13,6 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 
-testo_post="ciao"
 
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
@@ -23,6 +22,25 @@ aw=ActionView()
 aw.add_widget(ap)
 aw.add_widget(ab)
 bar.add_widget(aw)
+
+
+#variabili globali che servono per collegare il textinput al PostText
+def on_enter(self, *args):
+    # self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
+    pass
+
+statusin = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 0, 0.4), multiline=True,
+                                  size_hint=(None, None),
+                                  width=270, height=60, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp',
+                                  background_normal='textinput2.png')
+
+statusout = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp',
+                               size_hint=(None, None),
+                               pos_hint={'x': 0.40, 'top': 0.20})
+statusin.bind(on_text_validate=on_enter)
+btn_pub = Button(text="pubblica", size_hint=(None, None),
+                      width=80, height=25, pos_hint={'x': 0.595, 'top': 0.20}, font_size='13sp',
+                      background_normal='buttonbkgr.png')
 
 class Comments(GridLayout):
     def __init__(self, commentList, **kwargs):
@@ -39,7 +57,9 @@ class Comments(GridLayout):
             self.add_widget(textComment)
 
 
-# classe per pubblicare i post... contiene anche l'immagine utente e la bio
+"""classe per pubblicare i post... contiene il textinput, il bottone per pubblicare,
+l'immagine utente e la bio.
+"""
 class StatusBody(FloatLayout):
     def __init__(self, *args):
         super(StatusBody, self).__init__(*args)
@@ -53,7 +73,7 @@ class StatusBody(FloatLayout):
             instance.rect.pos = instance.pos
             instance.rect.size = instance.size
 
-        # aggiorna la posizione del rettangolo colorato/layout
+        # aggiorna la posizione del rettangolo/layout
         self.bind(pos=update_rect, size=update_rect)
 
         self.size_hint = (None, None)
@@ -67,34 +87,10 @@ class StatusBody(FloatLayout):
         self.add_widget(Label(text=nomeutente + bio, color=(0, 0, 255, 1), halign="left", size_hint=(None, None),
                               pos_hint={'x': 0.40, 'top': 0.98}))
 
-        # inserimento status
-        self.statusin = TextInput(text="A cosa stai pensando?", foreground_color=(0, 0, 255, 1), multiline=False,
-                                  size_hint=(None, None),
-                                  width=270, height=60, pos_hint={'x': 0.12, 'top': 0.50}, font_size='13sp',
-                                  background_normal='textinput2.png')
-        self.statusout = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp',
-                               size_hint=(None, None),
-                               pos_hint={'x': 0.40, 'top': 0.20})
-        self.statusin.bind(on_text_validate=self.on_enter)
+        self.add_widget(statusin)
+        self.add_widget(statusout)
 
-        self.add_widget(self.statusin)
-        self.add_widget(self.statusout)
-
-        self.btn_pub = Button(text="pubblica", size_hint=(None, None),
-                                  width=80, height=25, pos_hint={'x': 0.595, 'top': 0.20}, font_size='13sp',
-                                  background_normal='buttonbkgr.png')
-        self.btn_pub.on_press = self.btn_pressed
-        self.add_widget(self.btn_pub)
-
-    def btn_pressed(self, *args):
-        self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
-
-
-    def on_enter(self, *args):
-        #self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
-        pass
-
-
+        self.add_widget(btn_pub)
 
 
 """classe che serve per gestire il corpo del post.
@@ -137,10 +133,21 @@ class Body(FloatLayout):
         self.add_widget(description)
 
         #inserimento commenti
-        self.txt = TextInput(text="commenta", multiline=False, size_hint=(None, None), width= 90, height=27,
-                             pos_hint={'center_x':0.55, 'center_y': 1.2}, font_size='13sp')
-        self.txt.bind(on_text_validate=self.on_enter)
+        self.txt = TextInput(text="commenta", foreground_color=(0, 0, 0, 0.4), multiline=True,
+                             size_hint=(None, None), font_size='11sp',
+                             width= 95, height=25,
+                             pos_hint={'center_x':0.55, 'center_y': 1.2},
+                             background_normal = 'textinput2.png')
+        #validare con enter
+        #self.txt.bind(on_text_validate=self.on_enter)
         self.add_widget(self.txt)
+
+        self.btn_cmm=Button(text="ok", size_hint=(None, None), color=(0, 0, 0, 0.4),
+                      width=25, height=25, pos_hint={'center_x':0.78, 'center_y': 1.2}, font_size='13sp',
+                      background_normal='buttonbkgr.png')
+        self.btn_cmm.on_press = self.btn_pressed2
+        self.add_widget(self.btn_cmm)
+
 
         """
         attenzione!!! Le prossime 2 linee di codice si sovrappongono all'inserimento commenti 
@@ -161,7 +168,13 @@ class Body(FloatLayout):
         self.count += 1
         self.like_num.text = str(self.count)
 
-    def on_enter(self, *args):
+    #pubblica i commenti quando si preme invio
+    # def on_enter(self, *args):
+    #     self.comments.text = (self.comments.text + "\n" + self.txt.text)
+
+    # funzione che pubblica i commenti cliccando sul bottone
+
+    def btn_pressed2(self, *args):
         self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
 
@@ -218,7 +231,7 @@ class PostImage(BoxLayout):
         self.pos_hint = {'center_x': 0.55, 'top': 0.95}
         self.spacing=0
 
-        self.add_widget(MyImage("magic.jpg"))
+        self.add_widget(MyImage(name_img))
         self.add_widget(Body())
 
 # tipo post: testo
@@ -264,14 +277,21 @@ class Timeline(BoxLayout):
         # self.ap.clear_widgets()
 
         self.orientation='vertical'
-        # prova: aggiungo immagine o testo
         self.spacing=10
-        self.size_hint=(None,None)
-        self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
+        self.size_hint=(None,1)
+        self.pos_hint={'center_x': 0.5, 'center_y':0.5}
 
-       # self.add_widget(PostImage("magic.jpg"))
+        #prova:aggiungo immagine o testo
         self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
         self.add_widget(PostImage("magic.jpg"))
+
+        #evento legato alla variabile globale btn_pub
+        btn_pub.on_press = self.btn_pressed
+
+    #funzione che pubblica sottoforma di testo cio che e' scritto nel textinput (statusin)
+    def btn_pressed(self, *args):
+        self.add_widget(PostText(statusin.text))
+        #statusout.text = (statusout.text + '\n' + statusin.text)
 
 
 class MyWidget(FloatLayout):
@@ -296,17 +316,10 @@ class MyWidget(FloatLayout):
         self.height = 4000
 
         self.add_widget(bar)
-
         self.add_widget(StatusBody())
 
-
-
-        # prova: aggiungo immagine o testo
-
+        # aggiungo la timeline
         self.add_widget(Timeline())
-
-        #self.add_widget(PostImage("magic.jpg"))
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
 
 
 
