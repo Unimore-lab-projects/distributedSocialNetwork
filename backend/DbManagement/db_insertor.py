@@ -40,10 +40,10 @@ class DatabaseInsertor:
             uid = uuid4()
             extensions.adapt(uid).getquoted()
             me = My_user(user_id=uid, username=name)
-            logging.debug("FROM insert_my_user: my user not existing. creating.")
+            logging.debug("FROM insert_my_user: my user not existing. creating %s with uuid %s" % (name, uid))
             return me.save().addCallbacks(self.__user_done, log.err)
         else:
-            logging.debug("FROM insert_my_user: user already existing")
+            logging.debug("FROM insert_my_user: user %s already existing" % name)
             return my_user
 
     def insert_my_user(self, name):
@@ -59,7 +59,7 @@ class DatabaseInsertor:
             logging.error(node.errors)
         else:
             logging.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (
-            node.user_id, node.address, node.port))
+                node.user_id, node.address, node.port))
 
     def __node_updated(self, node):
         if len(node.errors) > 0:
@@ -67,7 +67,7 @@ class DatabaseInsertor:
             logging.error(node.errors)
         else:
             logging.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (
-            node.user_id, node.address, node.port))
+                node.user_id, node.address, node.port))
 
     def __update_node(self, node, user_id, address, port, last_update):
         if node is None:
