@@ -13,10 +13,25 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 
+#per cambiare schermata
+from subprocess import Popen
+
+from kivy.config import Config
+Config.set('graphics', 'fullscreen', 'auto')
+
+
+
+#funzione per cambiare schermata
+def ab_press():
+    Popen('python social.py')
+
 
 #layout actionbar
 ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
 ab=ActionButton(icon= 'home.png')
+
+ab.on_press = ab_press
+
 bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
 aw=ActionView()
 aw.add_widget(ap)
