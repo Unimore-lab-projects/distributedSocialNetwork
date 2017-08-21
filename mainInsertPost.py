@@ -1,8 +1,7 @@
-
+############
 
 from backend.Peer.node import *
 import sys
-
 
 def main():
     this=node(sys.argv[1])
