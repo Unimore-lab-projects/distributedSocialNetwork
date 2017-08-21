@@ -12,6 +12,7 @@ from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
 from functools import partial
 
 #per cambiare schermata
@@ -336,9 +337,9 @@ class MyWidget(FloatLayout):
         # aggiorna la posizione del rettangolo colorato/layout
         self.bind(pos=update_rect, size=update_rect)
 
-        self.size_hint = (None, None)
-        self.width = 1370
-        self.height = 4000
+        self.size_hint = (1, None)
+        # self.width = 1024
+        self.height = self.height + 2700
 
         self.add_widget(bar)
         self.add_widget(StatusBody())
@@ -349,8 +350,9 @@ class MyWidget(FloatLayout):
 
 
 class MySocialApp(App):
-    def build(self):
 
+    def build(self):
+        Window.clearcolor = (1, 1, 1, 1)
         sv = ScrollView(size_hint=(1, 1), do_scroll_x=False, do_scroll_y=True)
 
         sv.add_widget(MyWidget())
