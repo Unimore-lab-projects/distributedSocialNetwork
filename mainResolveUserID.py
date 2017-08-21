@@ -1,6 +1,6 @@
 
 
-from node import *
+from backend.Peer.node import *
 import sys
 
 

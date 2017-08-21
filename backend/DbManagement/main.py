@@ -15,17 +15,21 @@ log.startLogging(sys.stdout)
 
 
 # apre la connessione
-dbpool = open_connection(dbname="db_peer4", user="peer4")
+dbpool = open_connection(dbname="db_peer2", user="peer2")
 # istanza per i metodi di inserimento nel db
 inser = DatabaseInsertor(dbpool)
 inter = DatabaseInterrogator(dbpool)
 Registry.DBPOOL = dbpool
 
+
 def populateNodes():
-    for i in range(1, 5):
-        # inserisce 4 utenti nei rispettivi db
-        inser = DatabaseInsertor(open_connection(user="peer%s" % i, dbname="db_peer%s" % i))
-        inser.insert_my_user("peer%s" % i)
+    for i in [1, 2, 3, 4]:
+        inter = DatabaseInterrogator(open_connection(user="peer%s" % i, dbname="db_peer%s" % i))
+        print("peer n%s" % i)
+        inter.get_known_nodes()
+
+    # inser.insert_node(user_id="e9ef0227-a8dd-40f5-b3d6-83060f2d3cb6",address="127.0.0.1",port="8001")
+    pass
 
 
 def ddd(pack):
@@ -39,9 +43,7 @@ def done(res):
         r.addCallback(ddd)
 
 
-
-# dbpool = open_connecton(dbname="db_peer3",user="peer3")
-
+# populateNodes()
 # inter.get_post_pack('1476291454').addCallback(done)
 # inter.get_recents(10).addCallback(done)
 # inter.get_recents(10).addCallback(done)

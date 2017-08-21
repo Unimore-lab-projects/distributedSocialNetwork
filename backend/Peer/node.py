@@ -1,19 +1,11 @@
-from twisted.python import log
-from twisted.spread import pb
-from twisted.internet import reactor
+from twistar.dbconfig.base import InteractionBase
 from twisted.internet.defer import Deferred
 from twisted.internet.defer import DeferredList
 
-from twistar.dbconfig.base import InteractionBase
-
-from backend.DbManagement.tables import *
 from backend.DbManagement.db_insertor import *
 from backend.DbManagement.db_interrogator import *
-from backend.DbManagement.db_openConnection import *
-from backend.DbManagement.debug_messages import *
 from backend.DbManagement.db_openConnection import open_connection
-
-from datetime import datetime
+from backend.DbManagement.debug_messages import *
 
 
 class postPackageReceivedCopy(PostPackage, pb.RemoteCopy):
@@ -56,7 +48,7 @@ def getDictFromFile(filename, separator):
         couple = line.split(separator)
         # print(couple)
         resultDict[couple[0]] = couple[1]
-    logging.info(resultDict)
+    print(resultDict)
     return resultDict
     pass
 
@@ -291,6 +283,10 @@ class node(pb.Root):
         pass
 
     def populateKnownNodes(self):
+        """
+        Chiede ai propri known nodes la lista dei loro known_nodes.
+        :return:
+        """
         myNodeDeferred = self.getMyNode()
         currentKnownNodesDeferred = Deferred()
         self.interrogator.get_known_nodes().addCallback(self.__convertKnownNodeUuidType,
@@ -301,7 +297,7 @@ class node(pb.Root):
         pass
 
     def prov_errback(self, e):
-        print e
+        logging.error(e)
         pass
 
     def __waitForStartCondition(self, starter):
@@ -321,12 +317,12 @@ class node(pb.Root):
                 self.insertor.insert_node(nodesDict[i])
             pass
 
-        print("nodi ricevuti:")
-        printNodesDict(nodesDict)
-        print("nodi visitati:")
-        printNodesDict(visitedNodesDict)
-        print("nodi da visitare:")
-        printNodesDict(notVisitedNodesDict)
+        # print("nodi ricevuti:")
+        # printNodesDict(nodesDict)
+        # print("nodi visitati:")
+        # printNodesDict(visitedNodesDict)
+        # print("nodi da visitare:")
+        # printNodesDict(notVisitedNodesDict)
 
         for i in notVisitedNodesDict:
             visitedNodesDict[i] = notVisitedNodesDict[i]
