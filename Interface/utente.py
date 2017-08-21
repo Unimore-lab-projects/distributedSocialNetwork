@@ -12,6 +12,8 @@ from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+from functools import partial
 
 #per cambiare schermata
 from subprocess import Popen
@@ -287,6 +289,8 @@ class ImageButton(ButtonBehavior, Image):
 
 #Timeline: contiene tutti i post dell'utente uno sotto all'altro
 class Timeline(BoxLayout):
+    i=0
+
     def __init__(self, *args):
         super(Timeline, self).__init__(*args)
         # self.ap.clear_widgets()
@@ -297,15 +301,22 @@ class Timeline(BoxLayout):
         self.pos_hint={'center_x': 0.5, 'center_y':0.5}
 
         #prova:aggiungo immagine o testo
-        self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        self.add_widget(PostImage("magic.jpg"))
+        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        #self.add_widget(PostImage("magic.jpg"))
+
+
 
         #evento legato alla variabile globale btn_pub
-        btn_pub.on_press = self.btn_pressed
+        btn_pub.on_press=partial(self.btn_pressed)
+
 
     #funzione che pubblica sottoforma di testo cio che e' scritto nel textinput (statusin)
-    def btn_pressed(self, *args):
-        self.add_widget(PostText(statusin.text))
+    #i post vengono inseriti uno sopra l'altro (default: uno sotto l'altro)
+    def btn_pressed(self):
+        self.add_widget(PostText(statusin.text), index=self.i+1)
+        self.i=self.i+1
+        return self.i
+
         #statusout.text = (statusout.text + '\n' + statusin.text)
 
 
@@ -326,9 +337,9 @@ class MyWidget(FloatLayout):
         # aggiorna la posizione del rettangolo colorato/layout
         self.bind(pos=update_rect, size=update_rect)
 
-        self.size_hint = (None, None)
-        self.width = 1370
-        self.height = 4000
+        self.size_hint = (1, None)
+        # self.width = 1024
+        self.height = self.height + 2700
 
         self.add_widget(bar)
         self.add_widget(StatusBody())
@@ -339,8 +350,9 @@ class MyWidget(FloatLayout):
 
 
 class MySocialApp(App):
-    def build(self):
 
+    def build(self):
+        Window.clearcolor = (1, 1, 1, 1)
         sv = ScrollView(size_hint=(1, 1), do_scroll_x=False, do_scroll_y=True)
 
         sv.add_widget(MyWidget())
