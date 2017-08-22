@@ -28,18 +28,6 @@ def ab_press():
     Popen('python social.py')
 
 
-#layout actionbar
-ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
-ab=ActionButton(icon= 'home.png')
-
-ab.on_press = ab_press
-
-bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
-aw=ActionView()
-aw.add_widget(ap)
-aw.add_widget(ab)
-bar.add_widget(aw)
-
 
 #variabili globali che servono per collegare il textinput al PostText
 def on_enter(self, *args):
@@ -96,7 +84,7 @@ class StatusBody(FloatLayout):
         self.size_hint = (None, None)
         self.width = 400
         self.height = 220
-        self.pos_hint = {'left': 1, 'top': 0.98}
+        self.pos_hint = {'left': 1, 'top': 0.88}
 
         self.add_widget(Image(source='bianco.png', size_hint=(None, None), pos_hint={'left': 0.5, 'top': 0.98}))
         nomeutente = "user_name" + "\n"
@@ -297,8 +285,12 @@ class Timeline(BoxLayout):
 
         self.orientation='vertical'
         self.spacing=10
-        self.size_hint=(None,1)
+        self.size_hint=(1,None)
         self.pos_hint={'center_x': 0.5, 'center_y':0.5}
+
+        #self.size_hint = (1, None)
+        # self.width = 1024
+        self.height = self.height + 3000
 
         #prova:aggiungo immagine o testo
         #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
@@ -341,19 +333,34 @@ class MyWidget(FloatLayout):
         # self.width = 1024
         self.height = self.height + 2700
 
-        self.add_widget(bar)
-        self.add_widget(StatusBody())
+        #self.add_widget(StatusBody())
 
         # aggiungo la timeline
         self.add_widget(Timeline())
 
 
 
-class MySocialApp(App):
+class MySocialApp(App, FloatLayout):
 
     def build(self):
         Window.clearcolor = (1, 1, 1, 1)
-        sv = ScrollView(size_hint=(1, 1), do_scroll_x=False, do_scroll_y=True)
+
+        # layout actionbar
+        ap = ActionPrevious(with_previous=False, title="NomeSocial", color=(0, 0, 255, 1), app_icon='aven.jpg')
+        ab = ActionButton(icon='home.png')
+
+        ab.on_press = ab_press
+
+        bar = ActionBar(background_color=(0, 0, 0, 0.1), pos_hint={'top': 1})
+        aw = ActionView()
+        aw.add_widget(ap)
+        aw.add_widget(ab)
+        bar.add_widget(aw)
+
+        Window.add_widget(bar, canvas=None)
+        Window.add_widget(StatusBody(), canvas=None)
+
+        sv = ScrollView(size_hint=(0.37, 1), do_scroll_x=False, do_scroll_y=True, pos_hint={'center_x': 0.5, 'top': 0.9})
 
         sv.add_widget(MyWidget())
 
