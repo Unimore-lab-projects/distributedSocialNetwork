@@ -89,7 +89,7 @@ class StatusBody(FloatLayout):
         self.add_widget(Image(source='bianco.png', size_hint=(None, None), pos_hint={'left': 0.5, 'top': 0.98}))
         nomeutente = "user_name" + "\n"
         bio = "Hello! These are my posts!"
-        self.add_widget(Label(text=nomeutente + bio, color=(0, 0, 255, 1), halign="left", size_hint=(None, None),
+        self.add_widget(Label(text=nomeutente + bio, color=(0,0.38,0.88,1), halign="left", size_hint=(None, None),
                               pos_hint={'x': 0.40, 'top': 0.98}))
 
         self.add_widget(statusin)
@@ -112,7 +112,7 @@ class Body(FloatLayout):
         self.height=200
 
         nomeutente="user_name"
-        self.add_widget(Label(text=nomeutente, color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
+        self.add_widget(Label(text=nomeutente, color=(0,0.38,0.88,1), halign="left", font_size='15sp', size_hint=(None, None),
                                width=18, height=18, pos_hint={'x': 0.15, 'top': 3}))
 
         #contatore "like"
@@ -132,8 +132,8 @@ class Body(FloatLayout):
         #descrizione dell'immagine/post
 
         descrizione= "My picture! #ciao #hashtag1 #hashtag2"
-        description= Label(text=descrizione,color=(0, 0, 255, 1),
-                                halign="left", font_size='15sp', size_hint=(None, None), width=18, height=18,
+        description= Label(text=descrizione,color=(0,0,0.68,1),
+                                halign="left", size_hint=(None, None), width=18, height=18,
                                 pos_hint={'center_x':0.55, 'center_y': 1.4})
         self.add_widget(description)
 
@@ -158,7 +158,7 @@ class Body(FloatLayout):
         attenzione!!! Le prossime 2 linee di codice si sovrappongono all'inserimento commenti 
         di un vettore di label, se si inserisce un commento nel textinput (linee di codice successive).
         """
-        self.comments = Label(text="", color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
+        self.comments = Label(text="", color=(0,0,0.68,1), halign="left", size_hint=(None, None),
                               pos_hint={'center_x': 0.415, 'center_y': 1})
         self.add_widget(self.comments)
 
@@ -201,7 +201,7 @@ class MyText(Label):
 
         self.text = mytext
         self.font_size = "16sp"
-        self.color = (0, 0, 0, 1)
+        self.color = (0,0.38,0.88,1) # blu scuro
         self.size_hint = (1, 1)
         self.halign = 'left'
         self.pos_hint = {'center_y': 0.5, 'top': 1}
@@ -219,7 +219,7 @@ class PostImage(BoxLayout):
 
         # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
         with self.canvas.before:
-            Color(0, 0, 0, 0.1)  # grigio
+            Color(0.96, 0.96, 0.96, 1)  # grigio exa:F7F7F7
             self.rect = Rectangle(size=self.size, pos=self.pos)
 
         def update_rect(instance, value):
@@ -246,7 +246,7 @@ class PostText(BoxLayout):
 
         # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
         with self.canvas.before:
-            Color(0, 255, 255, 1)  # bianco
+            Color(0.96,0.96,0.96,1)  # grigio exa:F7F7F7
             self.rect = Rectangle(size=self.size, pos=self.pos)
 
         def update_rect(instance, value):
