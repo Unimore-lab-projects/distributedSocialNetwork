@@ -276,21 +276,21 @@ class ImageButton(ButtonBehavior, Image):
 
 
 #Timeline: contiene tutti i post dell'utente uno sotto all'altro
-class Timeline(BoxLayout):
+class Timeline(GridLayout):
     i=0
 
     def __init__(self, *args):
         super(Timeline, self).__init__(*args)
         # self.ap.clear_widgets()
 
-        self.orientation='vertical'
-        self.spacing=10
-        self.size_hint=(1,None)
-        self.pos_hint={'center_x': 0.5, 'center_y':0.5}
+        #self.orientation='vertical'
 
+        self.cols=1
+        self.spacing = 10
         #self.size_hint = (1, None)
-        # self.width = 1024
-        self.height = self.height + 3000
+        #self.pos_hint={'center_x': 0.5, 'center_y':0.5}
+        #self.width = 1024
+        #self.height = self.height + 3000
 
         #prova:aggiungo immagine o testo
         #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
@@ -360,7 +360,7 @@ class MySocialApp(App, FloatLayout):
         Window.add_widget(bar, canvas=None)
         Window.add_widget(StatusBody(), canvas=None)
 
-        sv = ScrollView(size_hint=(0.37, 1), do_scroll_x=False, do_scroll_y=True, pos_hint={'center_x': 0.5, 'top': 0.9})
+        sv = ScrollView(size_hint=(0.332, 1), do_scroll_x=False, do_scroll_y=True, pos_hint={'center_x': 0.5, 'top': 0.9})
 
         sv.add_widget(MyWidget())
 

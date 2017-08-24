@@ -12,6 +12,8 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.dropdown import DropDown
+from kivy.core.window import Window
+from functools import partial
 
 #per cambiare schermata
 from subprocess import Popen
@@ -22,19 +24,6 @@ Config.set('graphics', 'fullscreen', 'auto')
 #funzione per cambiare schermata
 def ab_press():
     Popen('python utente.py')
-
-#layout actionbar
-ap=ActionPrevious(with_previous= False, title="NomeSocial", color= (0, 0, 255, 1),app_icon= 'aven.jpg')
-ab=ActionButton(icon= 'bianco.png')
-ab.on_press = ab_press
-
-ab2=ActionButton(icon='refresh2.png')
-bar = ActionBar(background_color = (0, 0, 0, 0.1),pos_hint = {'top': 1})
-aw=ActionView()
-aw.add_widget(ap)
-aw.add_widget(ab2)
-aw.add_widget(ab)
-bar.add_widget(aw)
 
 class Comments(GridLayout):
     def __init__(self, commentList, **kwargs):
@@ -230,15 +219,16 @@ class ImageButton(ButtonBehavior, Image):
         self.source= img
 
 #Timeline: contiene tutti i post degli utenti uno sotto all'altro
-class Timeline(BoxLayout):
+class Timeline(GridLayout):
     def __init__(self, *args):
         super(Timeline, self).__init__(*args)
         # self.ap.clear_widgets()
 
-        self.orientation='vertical'
+        #self.orientation='vertical'
         # prova: aggiungo immagine o testo
+        self.cols=1
         self.spacing=10
-        self.size_hint=(1,1)
+        #self.size_hint=(1,1)
         #self.pos_hint={'center_x': 0.5, 'center_y': 0.68}
 
         self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
@@ -270,62 +260,79 @@ class MyWidget(FloatLayout):
         #self.width = 1024
         self.height = self.height+2700
 
-        self.add_widget(bar)
-
-        # layout ricerca utenti
-        self.searchuser = TextInput(text="search user", foreground_color=(0, 0, 0, 0.4), multiline=False,
-                                    size_hint=(None, None), width=100, height=25,
-                                    pos_hint={'center_x': 0.50, 'top': 0.996}, font_size='12sp',
-                                    background_normal='textinput2.png')
-        self.searchuser.bind(on_text_validate=self.on_enter2)
-
-        self.searchbtn = ImageButton("srch.png")
-        self.searchbtn.size_hint = (None, None)
-        self.searchbtn.width = 80
-        self.searchbtn.height = 25
-        self.searchbtn.pos_hint = {'center_x': 0.545, 'top': 0.996}
-        self.searchbtn.font_size = '12sp'
-        # searchbtn.on_press=self.btn2_pressed
-
-        self.add_widget(self.searchuser)
-        self.add_widget(self.searchbtn)
-
-
         self.add_widget(Timeline())
 
-        #sv = ScrollView(do_scroll_x=True, do_scroll_y=False)
-        #sv.add_widget(Timeline())
-        # self.add_widget(sv)
-
-
-    def on_enter2(self, *args):
-        # DropDownMenu
-        dropdown = DropDown()
-
-        btn1 = Button(text=self.searchuser.text, color=(0, 0, 255, 0.8), font_size='13sp',
-                      size_hint_y=None, height=22, background_color=(0, 0, 0, 0))
-        btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
-        dropdown.add_widget(btn1)
-
-        # for index in range(10):
-        #     #text=self.searchuser.text
-        #     btn1 = Button(text='Value %d' % index, color= (0,0,255,0.8), font_size='13sp',
-        #                   size_hint_y=None, height=22, background_color= (0, 0, 0, 0))
-        #     btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
-        #     dropdown.add_widget(btn1)
-
-        mainbutton=self.searchbtn
-        mainbutton.bind(on_release=dropdown.open)
-        dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
 
 class MySocialApp(App):
+
+    #funzione che fa comparire il DropDownMenu per cercare la stringa che si inserisce nella "searchuser"
     def build(self):
-        sv = ScrollView(size_hint=(1,1),do_scroll_x=False, do_scroll_y=True)
+
+        def on_enter2(self, *args):
+            # DropDownMenu
+            dropdown = DropDown()
+
+            btn1 = Button(text=searchuser.text, color=(0, 0, 255, 0.8), font_size='13sp',
+                          size_hint_y=None, height=22, background_color=(0, 0, 0, 0))
+            btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
+            dropdown.add_widget(btn1)
+
+            # for index in range(10):
+            #     #text=self.searchuser.text
+            #     btn1 = Button(text='Value %d' % index, color= (0,0,255,0.8), font_size='13sp',
+            #                   size_hint_y=None, height=22, background_color= (0, 0, 0, 0))
+            #     btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
+            #     dropdown.add_widget(btn1)
+
+            mainbutton = searchbtn
+            mainbutton.bind(on_release=dropdown.open)
+            dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
+
+        Window.clearcolor = (1, 1, 1, 1)
+
+        # layout actionbar
+        ap = ActionPrevious(with_previous=False, title="NomeSocial", color=(0, 0, 255, 1), app_icon='aven.jpg')
+        ab = ActionButton(icon='home.png')
+
+        ab.on_press = ab_press
+
+        bar = ActionBar(background_color=(0, 0, 0, 0.1), pos_hint={'top': 1})
+        aw = ActionView()
+        aw.add_widget(ap)
+        aw.add_widget(ab)
+        bar.add_widget(aw)
+
+        Window.add_widget(bar, canvas=None)
+
+        # layout ricerca utenti
+        searchuser = TextInput(text="search user", foreground_color=(0, 0, 0, 0.4), multiline=False,
+                                    size_hint=(None, None), width=100, height=25,
+                                    pos_hint={'center_x': 0.50, 'top': 0.98}, font_size='12sp',
+                                    background_normal='textinput2.png')
+        searchuser.bind(on_text_validate=on_enter2)
+
+        searchbtn = ImageButton("srch.png")
+        searchbtn.size_hint = (None, None)
+        searchbtn.width = 80
+        searchbtn.height = 25
+        searchbtn.pos_hint = {'center_x': 0.545, 'top': 0.98}
+        searchbtn.font_size = '12sp'
+        # searchbtn.on_press=self.btn2_pressed
+
+
+        Window.add_widget(searchuser)
+        Window.add_widget(searchbtn)
+
+
+        sv = ScrollView(size_hint=(0.332, 1), do_scroll_x=False, do_scroll_y=True,
+                        pos_hint={'center_x': 0.5, 'top': 0.9})
 
         sv.add_widget(MyWidget())
 
         return sv
+
+
 
 
 if __name__ == '__main__':
