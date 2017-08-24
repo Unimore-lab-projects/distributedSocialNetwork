@@ -25,28 +25,46 @@ Config.set('graphics', 'fullscreen', 'auto')
 def ab_press():
     Popen('python utente.py')
 
-class Comments(GridLayout):
+class Comments(BoxLayout):
+
     def __init__(self, commentList, **kwargs):
         # make sure we aren't overriding any important functionality
         super(Comments, self).__init__(**kwargs)
 
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(1, 1, 1, 1)  # grigio
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo colorato/layout
+        self.bind(pos=update_rect, size=update_rect)
+
         self.cols=1
-        self.size_hint=(0.5,0.5)
-        self.pos_hint = {'center_x': 0.6, 'center_y': 0.8}
+        self.size_hint=(1,0.8)
+        self.pos_hint = {'x':0.05, 'y': 0.25}
+        #self.spacing=10
+        gl = GridLayout(cols=1)
+        self.add_widget(gl)
         for comment in commentList:
-            textComment = Label(text=comment, color=(0, 0, 255, 1), halign='left', font_size='15sp',
-                                size_hint=(1.0, 1.0),
-                                pos_hint={'center_x': 0.5, 'top': 0.800})
-            self.add_widget(textComment)
+            textComment = Label(text=comment, color=(0, 0, 255, 1), halign='center', font_size='15sp',
+                                size_hint=(1, 1),
+                                pos_hint={'x': 0.2, 'top': 0.800})
+            gl.add_widget(textComment)
 
 
 
-"""classe che serve per gestire il corpo del post.
-Il float layout permette di mettere i widget dove si vuole, cosa che non sarebbe possibile con il boxlayout!
-La classe contiene il contatore dei like, il bottone dei like, il textinput per i commenti e i commenti inseriti nel textinput;
-serve anche per gestire i posizionamentitra l'immagine e il corpo del post! 
-"""
+
 class Body(FloatLayout):
+    """classe che serve per gestire il corpo del post.
+    Il float layout permette di mettere i widget dove si vuole, cosa che non sarebbe possibile con il boxlayout!
+    La classe contiene il contatore dei like, il bottone dei like, il textinput per i commenti e i commenti inseriti nel textinput;
+    serve anche per gestire i posizionamentitra l'immagine e il corpo del post! 
+    """
+
     def __init__(self, *args):
         super(Body, self).__init__(*args)
 
