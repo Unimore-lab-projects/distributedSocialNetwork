@@ -6,8 +6,9 @@ from twisted.spread import pb
 
 class Known_node(DBObject, pb.Copyable):
     TABLENAME = "known_nodes"
+
     def __str__(self):
-	return "user_id:  "+ str(self.user_id)+" port: "+str(self.port)
+        return "user_id:  " + str(self.user_id) + " port: " + str(self.port)
 
 
 Known_node.validatesPresenceOf('user_id')
@@ -21,14 +22,16 @@ class Friend(DBObject):
     # BELONGSTO = [{'name': 'comment', 'class_name': 'Comment', 'foreign_key': 'user_id'}]
     pass
 
+
 Friend.validatesUniquenessOf('user_id')
 Friend.validatesPresenceOf('user_id')
 Friend.validatesLengthOf('username', range=xrange(1, 16))
 
 
-class Comment(DBObject,pb.Copyable):
+class Comment(DBObject, pb.Copyable):
     # HASONE = [{'name': 'friend', 'class_name': 'Friend', 'foreign_key': 'user_id'}]
     pass
+
 
 # Registry.register(Comment, Friend)
 Comment.validatesPresenceOf('comment_id')
@@ -39,7 +42,7 @@ Comment.validatesLengthOf('content', range=xrange(0, 512))
 Comment.validatesLengthOf('username', range=xrange(1, 16))
 
 
-class Post(DBObject,pb.Copyable):
+class Post(DBObject, pb.Copyable):
     pass
 
 
@@ -48,7 +51,7 @@ Post.validatesPresenceOf('post_id')
 Post.validatesLengthOf('text_content', range=xrange(0, 512))
 
 
-class My_user(DBObject,pb.Copyable):
+class My_user(DBObject, pb.Copyable):
     TABLENAME = "my_user"
 
 
