@@ -25,7 +25,7 @@ Config.set('graphics', 'fullscreen', 'auto')
 def ab_press():
     Popen('python utente.py')
 
-class Comments(BoxLayout):
+class Comments(GridLayout):
 
     def __init__(self, commentList, **kwargs):
         # make sure we aren't overriding any important functionality
@@ -44,16 +44,22 @@ class Comments(BoxLayout):
         self.bind(pos=update_rect, size=update_rect)
 
         self.cols=1
-        self.size_hint=(1,0.8)
-        self.pos_hint = {'x':0.05, 'y': 0.25}
+        self.size_hint=(None,None)
+        self.pos_hint = {'x':0.05, 'y': 0.05}
+        self.width=430
+        self.height=210
         #self.spacing=10
-        gl = GridLayout(cols=1)
-        self.add_widget(gl)
+
         for comment in commentList:
-            textComment = Label(text=comment, color=(0, 0, 255, 1), halign='center', font_size='15sp',
-                                size_hint=(1, 1),
-                                pos_hint={'x': 0.2, 'top': 0.800})
-            gl.add_widget(textComment)
+            ucomment=comment[0]
+            comm=comment[1]
+            textComment = Label(text=ucomment+': '+comm, color=(0, 0, 255, 1),
+                                font_size='12sp',
+                                text_size= (self.width,None),
+                                halign='left',
+                                #pos_hint={'x':0.6}
+                                )
+            self.add_widget(textComment)
 
 
 
@@ -124,7 +130,8 @@ class Body(FloatLayout):
 
         #inserimento commenti come vettore di label
 
-        commentList = ["Commento!", "com mento2...", "COMMENto\ncommento3!", "Commentooooo4"]
+        commentList = [("user1","Commento!"), ("user2","com mento2..."), ("user3", "COMMENto\ncommento3!"), ("user4","Commentooooo4"),
+                       ("user1", "Commento!"), ("user2", "com mento2...")]
 
         commenti=Comments(commentList)
         self.add_widget(commenti)
