@@ -25,7 +25,12 @@ Config.set('graphics', 'fullscreen', 'auto')
 def ab_press():
     Popen('python utente.py')
 
+
 class Comments(GridLayout):
+    """
+    serve per gestire il layout dei commenti 
+    nella forma user: commento
+    """
 
     def __init__(self, commentList, **kwargs):
         # make sure we aren't overriding any important functionality
@@ -53,15 +58,14 @@ class Comments(GridLayout):
         for comment in commentList:
             ucomment=comment[0]
             comm=comment[1]
-            textComment = Label(text=ucomment+': '+comm, color=(0, 0, 255, 1),
+            textComment = Label(text=ucomment+': '+comm,
+                                color=(0, 0, 255, 1),
                                 font_size='12sp',
                                 text_size= (self.width,None),
                                 halign='left',
                                 #pos_hint={'x':0.6}
                                 )
             self.add_widget(textComment)
-
-
 
 
 class Body(FloatLayout):
@@ -79,8 +83,13 @@ class Body(FloatLayout):
         self.height=200
 
         nomeutente="user_name"
-        self.add_widget(Label(text=nomeutente, color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
-                               width=18, height=18, pos_hint={'x': 0.15, 'top': 3}))
+        self.add_widget(Label(text=nomeutente,
+                              color=(0, 0, 255, 1),
+                              halign="left",
+                              font_size='15sp',
+                              size_hint=(None, None),
+                              width=18, height=18,
+                              pos_hint={'x': 0.15, 'top': 3}))
 
         #contatore "like"
         btn=ImageButton("heartblue.png")
@@ -92,20 +101,32 @@ class Body(FloatLayout):
         self.add_widget(btn)
 
         self.count = 0
-        self.like_num = Label(text="0", color=(0, 0, 255, 1), halign="left", font_size='15sp', size_hint=(None, None),
-                              width=18, height=18, pos_hint={'center_x': 0.05, 'center_y': 1.2})
+        self.like_num = Label(text="0",
+                              color=(0, 0, 255, 1),
+                              halign="left",
+                              font_size='15sp',
+                              size_hint=(None, None),
+                              width=18, height=18,
+                              pos_hint={'center_x': 0.05, 'center_y': 1.2})
         self.add_widget(self.like_num)
 
         #descrizione dell'immagine/post
 
         descrizione= "My picture! #ciao #hashtag1 #hashtag2"
-        description= Label(text=descrizione,color=(0,0,0.68,1),
-                                halign="left", size_hint=(None, None), width=18, height=18,
-                                pos_hint={'center_x':0.55, 'center_y': 1.4})
+        description= Label(text=descrizione,
+                           color=(0,0,0.68,1),
+                           halign="left",
+                           size_hint=(None, None),
+                           width=18, height=18,
+                           pos_hint={'center_x':0.55, 'center_y': 1.4})
         self.add_widget(description)
 
         #inserimento commenti
-        self.txt = TextInput(text="commenta", foreground_color=(0, 0, 0, 0.4), multiline=True, size_hint=(None, None), font_size='11sp',
+        self.txt = TextInput(text="commenta",
+                             foreground_color=(0, 0, 0, 0.4),
+                             multiline=True,
+                             size_hint=(None, None),
+                             font_size='11sp',
                              width= 95, height=25,
                              pos_hint={'center_x':0.55, 'center_y': 1.2},
                              background_normal = 'textinput2.png')
@@ -113,24 +134,30 @@ class Body(FloatLayout):
         #self.txt.bind(on_text_validate=self.on_enter)
         self.add_widget(self.txt)
 
-        self.btn_cmm=Button(text="ok", size_hint=(None, None), color=(0, 0, 0, 0.4),
-                      width=25, height=25, pos_hint={'center_x':0.78, 'center_y': 1.2}, font_size='13sp',
-                      background_normal='buttonbkgr.png')
+        self.btn_cmm=Button(text="ok",
+                            color=(0, 0, 0, 0.4),
+                            size_hint=(None, None),
+                            width=25, height=25,
+                            pos_hint={'center_x':0.78, 'center_y': 1.2}, font_size='13sp',
+                            background_normal='buttonbkgr.png')
         self.btn_cmm.on_press = self.btn_pressed2
         self.add_widget(self.btn_cmm)
-
 
         """
         attenzione!!! Le prossime 2 linee di codice si sovrappongono all'inserimento commenti 
         di un vettore di label, se si inserisce un commento nel textinput (linee di codice successive).
         """
-        self.comments = Label(text="", color=(0,0,0.68,1), halign="left", size_hint=(None, None),
+        self.comments = Label(text="",
+                              color=(0,0,0.68,1),
+                              halign="left",
+                              size_hint=(None, None),
                               pos_hint={'center_x': 0.415, 'center_y': 1})
         self.add_widget(self.comments)
 
         #inserimento commenti come vettore di label
 
-        commentList = [("user1","Commento!"), ("user2","com mento2..."), ("user3", "COMMENto\ncommento3!"), ("user4","Commentooooo4"),
+        commentList = [("user1","Commento!"), ("user2","com mento2..."), ("user3", "COMMENto\ncommento3!"),
+                       ("user4","Commentooooo4 lunghissimoooooooooooooooooooooo"),
                        ("user1", "Commento!"), ("user2", "com mento2...")]
 
         commenti=Comments(commentList)
@@ -144,16 +171,17 @@ class Body(FloatLayout):
     # def on_enter(self, *args):
     #     self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
-    # funzione che pubblica i commenti cliccando sul bottone
 
+    # funzione che pubblica i commenti cliccando sul bottone
     def btn_pressed2(self, *args):
         self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
 
-# caratteristiche predefinite dell'immagine di un tipo post: immagine
-#ottimizzate per il BoxLayout
-
 class MyImage(Image):
+    """
+    caratteristiche predefinite dell'immagine di un tipo post: immagine
+    ottimizzate per il BoxLayout
+    """
     def __init__(self, name, *args):
         super(MyImage, self).__init__(*args)
         self.source = name
@@ -163,9 +191,11 @@ class MyImage(Image):
 
 
 
-        # caratteristiche predefinite del testo di un tipo post: testo
-#ottimizzate per il BoxLayout
 class MyText(Label):
+    """
+    caratteristiche predefinite del testo di un tipo post: testo
+    ottimizzate per il BoxLayout
+    """
     def __init__(self, mytext, *args):
         super(MyText, self).__init__(*args)
         self.text = mytext
@@ -181,8 +211,11 @@ class MyText(Label):
         #self.pos_hint = {'center_x': 0.5, 'top': 0.8}
 
 
-# tipo post: immagine
 class PostImage(BoxLayout):
+    """
+        ottimizzata per la classe Body
+        pubblica un post di tipo immagine
+    """
     def __init__(self, name_img, *args):
         super(PostImage, self).__init__(*args)
 
@@ -209,8 +242,11 @@ class PostImage(BoxLayout):
         self.add_widget(Body())
 
 
-# tipo post: solo testo
 class PostText(BoxLayout):
+    """
+        ottimizzata per la classe Body
+        pubblica un post di tipo immagine
+    """
     def __init__(self, my_text, *args):
         super(PostText, self).__init__(*args)
 
@@ -236,15 +272,23 @@ class PostText(BoxLayout):
         self.add_widget(MyText(my_text))
         self.add_widget(Body())
 
-#immagini come bottoni
+
 class ImageButton(ButtonBehavior, Image):
+    """
+    classe per trasformare una immagine
+    in un oggetto tipo Button
+    """
     def __init__(self, img, *args):
         super(ImageButton, self).__init__(*args)
 
         self.source= img
 
-#Timeline: contiene tutti i post degli utenti uno sotto all'altro
+
 class Timeline(GridLayout):
+    """
+    Timeline del social
+    contiene tutti i post degli utenti uno sotto all'altro
+    """
     def __init__(self, *args):
         super(Timeline, self).__init__(*args)
         # self.ap.clear_widgets()
@@ -260,7 +304,6 @@ class Timeline(GridLayout):
         self.add_widget(PostText('dsfjskdjfkdsf sdkfjksdjf sdkfjkldfj sdkf\nwelkkdjewfld efljwefod oejfwld\nlsdfjlakjd sldkfjs\nlwadjlawdkjlkdfjesklf'))
         self.add_widget(PostText('last text-----\nwhere\nare\nyou?'))
         self.add_widget(PostImage("magic.jpg"))
-
 
 
 class MyWidget(FloatLayout):
@@ -298,8 +341,12 @@ class MySocialApp(App):
             # DropDownMenu
             dropdown = DropDown()
 
-            btn1 = Button(text=searchuser.text, color=(0, 0, 255, 0.8), font_size='13sp',
-                          size_hint_y=None, height=22, background_color=(0, 0, 0, 0))
+            btn1 = Button(text=searchuser.text,
+                          color=(0, 0, 255, 0.8),
+                          font_size='13sp',
+                          size_hint_y=None,
+                          height=22,
+                          background_color=(0, 0, 0, 0))
             btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
             dropdown.add_widget(btn1)
 
@@ -316,7 +363,6 @@ class MySocialApp(App):
 
         Window.clearcolor = (1,1,1,1)
 
-
         # layout actionbar
         ap = ActionPrevious(with_previous=False, title="NomeSocial", color=(0, 0, 255, 1), app_icon='aven.jpg')
         ab = ActionButton(icon='home.png')
@@ -332,10 +378,14 @@ class MySocialApp(App):
         Window.add_widget(bar, canvas=None)
 
         # layout ricerca utenti
-        searchuser = TextInput(text="search user", foreground_color=(0, 0, 0, 0.4), multiline=False,
-                                    size_hint=(None, None), width=100, height=25,
-                                    pos_hint={'center_x': 0.50, 'top': 0.98}, font_size='12sp',
-                                    background_normal='textinput2.png')
+        searchuser = TextInput(text="search user",
+                               foreground_color=(0, 0, 0, 0.4),
+                               multiline=False,
+                               size_hint=(None, None),
+                               width=100, height=25,
+                               pos_hint={'center_x': 0.50, 'top': 0.98},
+                               font_size='12sp',
+                               background_normal='textinput2.png')
         searchuser.bind(on_text_validate=on_enter2)
 
         searchbtn = ImageButton("srch.png")
@@ -346,19 +396,16 @@ class MySocialApp(App):
         searchbtn.font_size = '12sp'
         # searchbtn.on_press=self.btn2_pressed
 
-
         Window.add_widget(searchuser)
         Window.add_widget(searchbtn)
 
-
-        sv = ScrollView(size_hint=(0.332, 1), do_scroll_x=False, do_scroll_y=True,
+        sv = ScrollView(size_hint=(0.332, 1),
+                        do_scroll_x=False,
+                        do_scroll_y=True,
                         pos_hint={'center_x': 0.5, 'top': 0.9})
 
         sv.add_widget(MyWidget())
-
         return sv
-
-
 
 
 if __name__ == '__main__':
