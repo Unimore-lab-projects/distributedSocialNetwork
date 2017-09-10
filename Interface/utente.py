@@ -21,17 +21,14 @@ from kivy.config import Config
 Config.set('graphics', 'fullscreen', 'auto')
 
 
-
 #funzione per cambiare schermata
 def ab_press():
     Popen('python social.py')
-
 
 #variabili globali che servono per collegare il textinput al PostText
 def on_enter(self, *args):
     # self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
     pass
-
 
 statusin = TextInput(text="A cosa stai pensando?",
                      foreground_color=(0, 0, 0, 0.4),
@@ -165,8 +162,9 @@ class MyImage(Image):
     def __init__(self, name, *args):
         super(MyImage, self).__init__(*args)
         self.source = name
-        self.size_hint = (1, None)
-        self.height=290
+        self.size_hint = (None, None)
+        self.width = 430
+        self.height = 280
         self.pos_hint = {'center_x':0.5, 'center_y':0.71}
 
 
@@ -178,10 +176,27 @@ class MyText(Label):
 
     def __init__(self, mytext, *args):
         super(MyText, self).__init__(*args)
+
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(0.937, 0.937, 0.937, 0.3)  # grigio 10%
+            self.rect = Rectangle(source='verythin.png', size=self.size, pos=self.pos)
+            # se non vi piace la cornice mettere a 1 l'indice 'a' del color e scommentare la riga sotto
+            # self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo/layout
+        self.bind(pos=update_rect, size=update_rect)
+
         self.text = mytext
         self.font_size="16sp"
         self.color=(0,0.38,0.88,1)
-        self.size_hint = (1, 1)
+        self.size_hint = (None, None)
+        self.width = 430
+        self.height = 280
         self.halign='left'
         self.pos_hint = {'center_x':0.5, 'center_y':0.71}
 
@@ -253,8 +268,9 @@ class Post(FloatLayout):
         descrizione= "My picture! #ciao #hashtag1 #hashtag2"
         description= Label(text=descrizione,
                            color=(0,0,0.68,1),
+                           font_size= '11pt',
                            halign="left",
-                           pos_hint={'x':-0.17, 'y': -0.06})
+                           pos_hint={'x':-0.19, 'y': -0.055})
         self.add_widget(description)
 
         #inserimento commenti
@@ -295,7 +311,9 @@ class Post(FloatLayout):
 
         commentList = [("user1","Commento!"), ("user2","com mento2..."), ("user3", "COMMENto\ncommento3!"),
                        ("user4","Commentooooo4 lunghissimoooooooooooooooooooooo"),
-                       ("user1", "Commento!"), ("user2", "com mento2...")]
+                       ("user5", "Commento!"), ("user6", "com mento2..."),
+                       ("user7", "Commento!"), ("user8", "com mento2...")
+                       ]
 
         commenti=Comments(commentList)
         self.add_widget(commenti)
@@ -338,8 +356,8 @@ class Timeline(GridLayout):
         #self.height = self.height + 3000
 
         #prova:aggiungo immagine o testo
-        #self.add_widget(PostText('Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        #self.add_widget(PostImage("magic.jpg"))
+        #self.add_widget(Post('posttext', 'Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        #self.add_widget(Post('postimage', "magic.jpg"))
 
         #evento legato alla variabile globale btn_pub
         btn_pub.on_press=partial(self.btn_pressed)
@@ -376,8 +394,6 @@ class MyWidget(FloatLayout):
         # self.width = 1024
         self.height = self.height + 2700
 
-        #self.add_widget(StatusBody())
-
         # aggiungo la timeline
         self.add_widget(Timeline())
 
@@ -394,6 +410,7 @@ class MySocialApp(App, FloatLayout):
                             app_icon='aven.jpg')
 
         ab = ActionButton(icon='home.png')
+        ab2 = ActionButton(icon='refresh.png')
 
         ab.on_press = ab_press
 
@@ -402,6 +419,7 @@ class MySocialApp(App, FloatLayout):
 
         aw = ActionView()
         aw.add_widget(ap)
+        aw.add_widget(ab2)
         aw.add_widget(ab)
         bar.add_widget(aw)
 
@@ -419,6 +437,4 @@ class MySocialApp(App, FloatLayout):
 
 if __name__ == '__main__':
     MySocialApp().run()
-
-
 
