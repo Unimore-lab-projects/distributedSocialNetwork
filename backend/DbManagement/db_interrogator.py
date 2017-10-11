@@ -12,6 +12,9 @@ class DatabaseInterrogator:
     def __init__(self, dbpool):
         Registry.DBPOOL = dbpool
 
+    def generic_err(self, e):
+        print(e)
+
     # my_user
 
     def __done_my_user(self, me):
@@ -73,7 +76,7 @@ class DatabaseInterrogator:
 
     def __filter_known_nodes(self, friends):
         whereList = []
-        if len(friends)>0:
+        if len(friends) > 0:
             for friend in friends:
                 # logging.debug("Friend: %s username %s " % (friend.user_id, friend.username))
                 where = ['user_id = ? ', friend.user_id]
@@ -132,7 +135,9 @@ class DatabaseInterrogator:
     # username del friend
 
     def __done_username(self, result):
-        return result.username
+        if result:
+            return result.username
+        return None
 
     def get_friend_username(self, user_id):
         """
@@ -144,10 +149,14 @@ class DatabaseInterrogator:
 
     # get a single post and his comments
 
-    def __create_package(self, comments, post):
-        packa = PostPackage(post, comments)
-        # logging.debug(packa)
+    def __done_package_username(selfs, my_user, post, comments):
+        packa = PostPackage(post=post, commentList=comments, username=my_user.username)
         return defer.succeed(packa)
+
+    def __create_package(self, comments, post):
+        print("POST USER_ID : %s" %post.user_id)
+        return self.get_my_user().addCallback(self.__done_package_username, post, comments)
+        # return self.get_friend_username(post.user_id).addCallback(self.__done_package_username, post, comments)
 
     def __get_comments(self, post):
         return self.get_post_comments(post, None).addCallback(self.__create_package, post)
@@ -179,9 +188,11 @@ class DatabaseInterrogator:
 
 
 class PostPackage(pb.Copyable):
-    def __init__(self, post=None, commentList=None):
+    def __init__(self, post=None, commentList=None, username=None):
         self.post = post
         self.commentList = commentList
+        self.username = username
+        logging.debug(username)
 
     def setPost(self, post):
         self.post = post

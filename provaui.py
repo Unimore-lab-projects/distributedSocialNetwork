@@ -2,7 +2,7 @@ from kivy.support import install_twisted_reactor
 
 install_twisted_reactor()
 
-from  backend.Peer.node import node
+from backend.Peer.node import node
 from twisted.internet import reactor
 from twisted.spread import pb
 from kivy.app import App

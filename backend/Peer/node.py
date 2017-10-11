@@ -153,6 +153,9 @@ class node(pb.Root):
         # reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
         pass
 
+    def get_interrogator(self):
+        return self.interrogator
+
     def incomingConnection(self, callerNode):
         print("connessione in ingresso: " + str(callerNode.user_id) + " " +
               str(callerNode.address) + " " + str(callerNode.port))
