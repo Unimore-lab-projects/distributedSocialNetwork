@@ -275,16 +275,35 @@ class node(pb.Root):
             c.query("resolveUserID", [myNode, solverNode, targetUid, timeToLive])
         pass
 
-    def remote_insertComment(self):
+    def remote_insertComment(self, callerNode, content, post_id):
+        self.insertComment(comment=None,post_id=post_id,content=content,
+                           user_id=callerNode.user_id,username=callerNode.username)
         pass
 
-    def insertComment(self):
+    def insertComment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
+        self.insertor.insert_comment(comment=comment,post_id=post_id,
+                                     user_id=user_id,username=username,content=content)
         pass
 
     def insertPost(self, post=None, text_content=None, path_to_imagefile=None):
         self.insertor.insert_post(post, text_content, path_to_imagefile)
         pass
 
+    def sendComment(self,content,post_id,remote_user_id):
+        #self.interrogator.get_my_user().addCallback(self._sendCommentCallback,content,post_id)
+        myUserDeferred=self.interrogator.get_my_user()
+        remoteNodeDeferred=self.interrogator.get_node(remote_user_id)
+        DeferredList([myUserDeferred,remoteNodeDeferred]).addCallback(self._sendCommentCallback,
+                                                                        content,post_id)
+        pass
+    def _sendCommentCallback(self,result,content,post_id):
+        myUser=result[0][1]
+        remoteNode=result[1][1]
+
+        connection = self.currentConnections.connect(remoteNode)
+        connection.query("insertComment", [myUser,content,post_id])
+
+        pass
     def populateKnownNodes(self):
         """
         Chiede ai propri known nodes la lista dei loro known_nodes.
@@ -311,7 +330,6 @@ class node(pb.Root):
     def getAllKnownNodes(self, nodesDict, visitedNodesDict, myNode):
         notVisitedNodesDict = dict()
 
-        # if(len(visitedNodesDict)<int(self.config["peer_known_nodes_threshold"])):
         for i in nodesDict:
             if ((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id == myNode.user_id)):
                 visitedNodesDict[i] = nodesDict[i]
@@ -319,13 +337,6 @@ class node(pb.Root):
 
                 self.insertor.insert_node(nodesDict[i])
             pass
-
-        # print("nodi ricevuti:")
-        # printNodesDict(nodesDict)
-        # print("nodi visitati:")
-        # printNodesDict(visitedNodesDict)
-        # print("nodi da visitare:")
-        # printNodesDict(notVisitedNodesDict)
 
         for i in notVisitedNodesDict:
             visitedNodesDict[i] = notVisitedNodesDict[i]

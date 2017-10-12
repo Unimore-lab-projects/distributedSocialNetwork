@@ -144,7 +144,7 @@ class Post(FloatLayout):
     Il float layout permette di posizionare i widget a piacere, senza vincoli oltre a size_hint.        
     """
 
-    def __init__(self, post_type, post_content, *args):
+    def __init__(self, post_type, post_content, username, *args):
         super(Post, self).__init__(*args)
 
         with self.canvas.before:
@@ -162,7 +162,7 @@ class Post(FloatLayout):
         self.width = 450
         self.height = 600
 
-        nomeutente = "user_name"
+        nomeutente = username
         self.add_widget(Label(text=nomeutente,
                               color=(0, 0, 255, 1),
                               halign="left",
@@ -288,15 +288,20 @@ class Timeline(GridLayout):
             text = pack.post.text_content
             user_id = pack.post.user_id
 
-            print(text)
-            print(user_id)
-            print(pack.username)
+            new_post = Post('posttext', text, pack.username)
+            #print(text)
+            #print(user_id)
+            #print(pack.username)
+            self.add_post(new_post)
 
-        self.add_widget(Post('posttext', 'Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        self.add_widget(Post('posttext',
-                             'dsfjs'))
-        self.add_widget(Post('posttext', 'last text-----\nwhere\nare\nyou?'))
-        self.add_widget(Post('postimage', "magic.jpg"))
+
+
+        #self.add_widget(Post('posttext', 'Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        #self.add_widget(Post('posttext',
+        #                     'dsfjs'))
+        #self.add_widget(Post('posttext', 'last text-----\nwhere\nare\nyou?'))
+        #self.add_widget(Post('postimage', "magic.jpg"))
+
 
     def add_post(self, post):
         self.add_widget(post)
@@ -433,8 +438,7 @@ class MySocialApp(App, pb.Root):
 
 if __name__ == '__main__':
 
-
-    thisNode = node('/home/archeffect/PycharmProjects/distributedSocialNetwork/backend/Peer/peer4.config')
+    thisNode = node('/home/marcella/git/distributedSocialNetwork/backend/Peer/peer4.config')
     thisNode.populateKnownNodes()
     # inter = thisNode.get_interrogator()
 
