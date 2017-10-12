@@ -21,13 +21,93 @@ from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
+from functools import partial
 
 Config.set('graphics', 'fullscreen', 'auto')
 
 
 # funzione per cambiare schermata
-def ab_press():
-    Popen('python utente.py')
+def switch_timelines_fcn():
+    # execfile('/home/archeffect/PycharmProjects/distributedSocialNetwork/Interface/utente.py')
+    pass
+
+
+# variabili globali che servono per collegare il textinput al PostText
+def on_enter(self, *args):
+    # self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
+    pass
+
+
+statusin = TextInput(text="A cosa stai pensando?",
+                     foreground_color=(0, 0, 0, 0.4),
+                     multiline=True,
+                     size_hint=(None, None),
+                     width=270, height=60,
+                     pos_hint={'x': 0.12, 'top': 0.50},
+                     font_size='13sp',
+                     background_normal='textinput2.png')
+
+statusout = Label(text="",
+                  color=(0, 0, 255, 1),
+                  halign="left",
+                  font_size='15sp',
+                  size_hint=(None, None),
+                  pos_hint={'x': 0.40, 'top': 0.20})
+
+statusin.bind(on_text_validate=on_enter)
+
+btn_pub = Button(text="pubblica",
+                 size_hint=(None, None),
+                 width=80, height=25,
+                 pos_hint={'x': 0.595, 'top': 0.20},
+                 font_size='13sp',
+                 background_normal='buttonbkgr.png')
+
+
+class StatusBody(FloatLayout):
+    """
+    classe per pubblicare i post.
+    Contiene il textinput, il bottone per pubblicare,
+    l'immagine utente e la bio.
+    """
+
+    def __init__(self, *args):
+        super(StatusBody, self).__init__(*args)
+
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(255, 255, 255, 1)  # bianco
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo/layout
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.size_hint = (None, None)
+        self.width = 400
+        self.height = 220
+        self.pos_hint = {'left': 1, 'top': 0.88}
+
+        self.add_widget(Image(source='bianco.png',
+                              size_hint=(None, None),
+                              pos_hint={'left': 0.5, 'top': 0.98}))
+
+        nomeutente = "user_name" + "\n"
+        bio = "Hello! These are my posts!"
+
+        self.add_widget(Label(text=nomeutente + bio,
+                              color=(0, 0.38, 0.88, 1),
+                              halign="left",
+                              size_hint=(None, None),
+                              pos_hint={'x': 0.40, 'top': 0.98}))
+
+        self.add_widget(statusin)
+        self.add_widget(statusout)
+
+        self.add_widget(btn_pub)
 
 
 class ImageButton(ButtonBehavior, Image):
@@ -262,13 +342,59 @@ class Post(FloatLayout):
         self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
 
+class UserBody(FloatLayout):
+    """
+    classe per pubblicare i post.
+    Contiene il textinput, il bottone per pubblicare,
+    l'immagine utente e la bio.
+    """
+
+    def __init__(self, *args):
+        super(UserBody, self).__init__(*args)
+
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(255, 255, 255, 1)  # bianco
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo/layout
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.size_hint = (None, None)
+        self.width = 400
+        self.height = 220
+        self.pos_hint = {'left': 1, 'top': 0.88}
+
+        self.add_widget(Image(source='bianco.png',
+                              size_hint=(None, None),
+                              pos_hint={'left': 0.5, 'top': 0.98}))
+
+        nomeutente = "user_name" + "\n"
+        bio = "Hello! These are my posts!"
+
+        self.add_widget(Label(text=nomeutente + bio,
+                              color=(0, 0.38, 0.88, 1),
+                              halign="left",
+                              size_hint=(None, None),
+                              pos_hint={'x': 0.40, 'top': 0.98}))
+
+        self.add_widget(statusin)
+        self.add_widget(statusout)
+
+        self.add_widget(btn_pub)
+
+
 class Timeline(GridLayout):
     """
     Timeline del social
     contiene tutti i post degli utenti uno sotto all'altro.
     """
 
-    def __init__(self, postPackageList, *args):
+    def __init__(self, postPackageList=None, *args):
         super(Timeline, self).__init__(*args)
         # self.ap.clear_widgets()
 
@@ -283,28 +409,71 @@ class Timeline(GridLayout):
         # Il primo parametro della funzione post indica il tipo di post che si intende pubblicare:
         # 'posttext', per tipo testo, 'postimage' per il tipo immagine;
         # il secondo parametro indica il contenuto del post.
-        from backend.DbManagement.db_interrogator import DatabaseInterrogator
-        for pack in postPackageList:
-            text = pack.post.text_content
-            user_id = pack.post.user_id
+        if postPackageList:
+            from backend.DbManagement.db_interrogator import DatabaseInterrogator
+            for pack in postPackageList:
+                text = pack.post.text_content
+                user_id = pack.post.user_id
 
-            new_post = Post('posttext', text, pack.username)
-            #print(text)
-            #print(user_id)
-            #print(pack.username)
-            self.add_post(new_post)
+                new_post = Post('posttext', text, pack.username)
+                # print(text)
+                # print(user_id)
+                # print(pack.username)
+                self.add_post(new_post)
 
 
 
-        #self.add_widget(Post('posttext', 'Text in a very long lineeeeeeeeeeeeeee\nanother line'))
-        #self.add_widget(Post('posttext',
-        #                     'dsfjs'))
-        #self.add_widget(Post('posttext', 'last text-----\nwhere\nare\nyou?'))
-        #self.add_widget(Post('postimage', "magic.jpg"))
-
+                # self.add_widget(Post('posttext', 'Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+                # self.add_widget(Post('posttext',
+                #                     'dsfjs'))
+                # self.add_widget(Post('posttext', 'last text-----\nwhere\nare\nyou?'))
+                # self.add_widget(Post('postimage', "magic.jpg"))
 
     def add_post(self, post):
         self.add_widget(post)
+
+
+class UserTimeline(GridLayout):
+    """
+        Timeline dell'utente
+        contiene tutti i post degll'utente uno sotto all'altro
+        parametro i serve per invertire l'ordine di inserimento
+        nel caso di BoxLayout
+    """
+
+    i = 0
+
+    def __init__(self, *args):
+        super(UserTimeline, self).__init__(*args)
+        # self.ap.clear_widgets()
+
+        # self.orientation='vertical'
+
+        self.cols = 1
+        self.spacing = 10
+        # self.size_hint = (1, None)
+        # self.pos_hint={'center_x': 0.5, 'center_y':0.5}
+        # self.width = 1024
+        # self.height = self.height + 3000
+
+        # prova:aggiungo immagine o testo
+        # self.add_widget(Post('posttext', 'Text in a very long lineeeeeeeeeeeeeee\nanother line'))
+        # self.add_widget(Post('postimage', "magic.jpg"))
+
+        # evento legato alla variabile globale btn_pub
+        btn_pub.on_press = partial(self.pubblica_post)
+
+    # funzione che pubblica sottoforma di testo cio che e' scritto nel textinput (statusin)
+    # i post vengono inseriti uno sopra l'altro (default: uno sotto l'altro)
+    def pubblica_post(self):
+        print("bnt_pressed")
+        post = Post('posttext', statusin.text, "username")
+        self.add_widget(post, index=self.i + 1)
+        self.i = self.i + 1
+        print("%s" % post)
+        return self.i
+
+        # statusout.text = (statusout.text + '\n' + statusin.text)
 
 
 class MyWidget(FloatLayout):
@@ -314,6 +483,7 @@ class MyWidget(FloatLayout):
 
     def __init__(self, buildTimeline, *args):
         super(MyWidget, self).__init__(*args)
+        self.timeline = 0
         # self.ap.clear_widgets()
 
         # aggiungo uno sfondo al layout, aggiungengo un rettangolo colorato
@@ -332,19 +502,19 @@ class MyWidget(FloatLayout):
         # self.width = 1024
         self.height = self.height + 2700
         self.buildTimeline = buildTimeline
-        self.refresh_timeline()
+        self.load_timeline()
         # self.refresh_bnt = refresh_btn
         # self.refresh_btn.on_press = self.refresh_timeline
 
-    def refresh_timeline(self):
+    def load_timeline(self):
         deferredList = self.buildTimeline()
         deferredList.addCallback(self.__got_timeline)
         pass
 
     def __got_timeline(self, post_package_list):
+        self.timeline = 0
         self.current_timeline = Timeline(post_package_list)
         self.add_widget(self.current_timeline)
-
         pass
 
 
@@ -353,9 +523,9 @@ class MySocialApp(App, pb.Root):
     Classe container per la scrollview, contiene lo scheletro dell'interfaccia
     """
 
-    def __init__(self, mainWidget):
+    def __init__(self, myWidget):
         super(MySocialApp, self).__init__()
-        self.mainWidget = mainWidget
+        self.timelineContainer = myWidget
         pass
 
     # funzione che fa comparire il DropDownMenu per cercare la stringa che si inserisce nella "searchuser"
@@ -388,16 +558,16 @@ class MySocialApp(App, pb.Root):
 
         # layout actionbar
         menu_bar = ActionPrevious(with_previous=False, title="NomeSocial", color=(0, 0, 255, 1), app_icon='aven.jpg')
-        user_btn = ActionButton(icon='bianco.png')
+        main_timeline_btn = ActionButton(icon='bianco.png')
         refresh_btn = ActionButton(icon='refresh.png')
-        refresh_btn.on_press = mainWidget.refresh_timeline
-        user_btn.on_press = ab_press
+        refresh_btn.on_press = myWidget.load_timeline
+        main_timeline_btn.bind(on_press=switch_timelines_fcn)
 
         bar = ActionBar(background_color=(0, 0, 0, 0.1), pos_hint={'top': 1})
         aw = ActionView()
         aw.add_widget(menu_bar)
         aw.add_widget(refresh_btn)
-        aw.add_widget(user_btn)
+        aw.add_widget(main_timeline_btn)
         bar.add_widget(aw)
 
         Window.add_widget(bar, canvas=None)
@@ -429,7 +599,15 @@ class MySocialApp(App, pb.Root):
                         do_scroll_y=True,
                         pos_hint={'center_x': 0.5, 'top': 0.9})
 
-        sv.add_widget(self.mainWidget)
+        # main_timeline = Timeline()
+        user_timeline = UserTimeline()
+        # self.timelineContainer.clear_widgets()
+        self.timelineContainer.add_widget(Timeline())
+        Window.add_widget(StatusBody())
+
+        sv.add_widget(self.timelineContainer)
+
+
         return sv
 
     def get_ref_btn(self):
@@ -437,15 +615,13 @@ class MySocialApp(App, pb.Root):
 
 
 if __name__ == '__main__':
-
-    thisNode = node('/home/marcella/git/distributedSocialNetwork/backend/Peer/peer4.config')
+    thisNode = node('../backend/Peer/peer4.config')
     thisNode.populateKnownNodes()
     # inter = thisNode.get_interrogator()
 
 
-    mainWidget = MyWidget(thisNode.buildTimeline)
-
-    app = MySocialApp(mainWidget)
+    myWidget = MyWidget(thisNode.buildTimeline)
+    app = MySocialApp(myWidget)
     reactor.listenTCP(8003, pb.PBServerFactory(app))
 
     app.run()

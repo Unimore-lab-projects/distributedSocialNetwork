@@ -23,7 +23,7 @@ Config.set('graphics', 'fullscreen', 'auto')
 
 #funzione per cambiare schermata
 def ab_press():
-    Popen('python social.py')
+    execfile('Social.py')
 
 #variabili globali che servono per collegare il textinput al PostText
 def on_enter(self, *args):
@@ -332,7 +332,7 @@ class Post(FloatLayout):
         self.comments.text = (self.comments.text + "\n" + self.txt.text)
 
 
-class Timeline(GridLayout):
+class UserTimeline(GridLayout):
     """
         Timeline dell'utente
         contiene tutti i post degll'utente uno sotto all'altro
@@ -343,7 +343,7 @@ class Timeline(GridLayout):
     i=0
 
     def __init__(self, *args):
-        super(Timeline, self).__init__(*args)
+        super(UserTimeline, self).__init__(*args)
         # self.ap.clear_widgets()
 
         #self.orientation='vertical'
@@ -395,7 +395,7 @@ class MyWidget(FloatLayout):
         self.height = self.height + 2700
 
         # aggiungo la timeline
-        self.add_widget(Timeline())
+        self.add_widget(UserTimeline())
 
 
 class MySocialApp(App, FloatLayout):
