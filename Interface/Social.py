@@ -448,7 +448,6 @@ class MySocialApp(App, pb.Root):
         self.sv.add_widget(self.myWidget)
 
 if __name__ == '__main__':
-    # TODO eventualmente mostrare i propri post.
     # TODO caricare i commenti.
     # TODO postare i commenti.
     # TODO mostrare ricerca known nodes.

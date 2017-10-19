@@ -79,6 +79,7 @@ class DatabaseInsertor:
             node.port = port
             node.last_update = datetime.today()
             node.save().addCallback(self.__node_created)
+
         else:
             if node.last_update < last_update:
                 logging.debug(
@@ -115,27 +116,31 @@ class DatabaseInsertor:
             logging.debug("friend added. uuid is %s and username is %s" % (result.user_id, result.username))
             return True
 
-    def __friend_found(self, result, friend):
+    def __friend_found(self, result, user_id, username):
         if result is None:
             logging.debug("creating friend")
+            friend = Friend()
+            friend.user_id = user_id
+            friend.username = username
             friend.save().addCallback(self.__done_save_friend)
         else:
             logging.debug("friend already existing. exiting")
             return True
 
-    def __node_found(self, node, friend):
+    def __node_found(self, node, user_id, username):
         if node is None:
             # nodo non trovato
             logging.debug("Nodo sconosciuto")
             return False
         else:
-            Friend.find(where=['user_id=?'], limit=1).addCallback(self.__friend_found, friend)
+            Friend.find(where=['user_id=?', user_id], limit=1).addCallback(self.__friend_found, user_id, username)
 
-    def insert_friend(self, friend):
+    def insert_friend(self, user_id, username=None):
         """Ritorna False se il nodo non è stato trovato"""
         from twisted.internet import defer
         self.d = defer.Deferred()
-        self.d = Known_node.find(where=['user_id=?', friend.user_id], limit=1).addCallback(self.__node_found, friend)
+        self.d = Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__node_found, user_id,
+                                                                                    username)
         return self.d
 
     # INSERT A POST
@@ -196,6 +201,7 @@ class DatabaseInsertor:
     def insert_comment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
         if comment is None:
             comment = Comment()
+            comment.comment_id = int(str(int(time.time())) + str(random.randint(0, 99999)))
             comment.post_id = post_id
             comment.user_id = user_id
             comment.username = username
