@@ -351,12 +351,14 @@ class node(pb.Root):
     pass
 
     def buildTimeline(self):
-        result = Deferred()
+        friendsTimeline= Deferred()
         myNodeDeferred = self.getMyNode()
-        #        myFriendsDeferred=self.interrogator.get_friends()
         myFriendsDeferred = self.interrogator.get_known_nodes()
+        myTimelineDeferred = self.interrogator.get_recents()
         starter = DeferredList([myNodeDeferred, myFriendsDeferred])
-        starter.addCallback(self.__getAllPostsAndComments, int(self.config["peer_default_timeline_days"]), result)
+        starter.addCallback(self.__getAllPostsAndComments,
+                            int(self.config["peer_default_timeline_days"]), friendsTimeline)
+        result = DeferredList([myTimelineDeferred, friendsTimeline])
         return result
         pass
 

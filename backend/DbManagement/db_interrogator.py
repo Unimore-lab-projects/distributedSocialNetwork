@@ -132,6 +132,7 @@ class DatabaseInterrogator:
         return Post.find(where=['post_id > ?', unix_time]) \
             # .addCallbacks(self.__done_latest_posts, log.err)
 
+
     # username del friend
 
     def __done_username(self, result):
@@ -178,7 +179,7 @@ class DatabaseInterrogator:
         logging.debug("returning pack list: %s " % pack_list)
         return pack_list
 
-    def get_recents(self, days):
+    def get_recents(self, days=10):
         """
         ottiene la lista di post e relativi commenti negli ultimi giorni
 

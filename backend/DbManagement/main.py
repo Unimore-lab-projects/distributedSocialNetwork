@@ -15,13 +15,15 @@ log.startLogging(sys.stdout)
 
 
 # apre la connessione
-dbpool = open_connection(dbname="db_peer1", user="peer1")
+from random import randint
+peer = random.randint(1,4)
+dbpool = open_connection(dbname="db_peer%s" % peer, user="peer%s" % peer )
 # istanza per i metodi di inserimento nel db
 inser = DatabaseInsertor(dbpool)
 inter = DatabaseInterrogator(dbpool)
 Registry.DBPOOL = dbpool
 
-inser.insert_friend()
+inser.insert_post(None,text_content="bzfljgsjgjds!")
 
 # def populateNodes():
 #     for i in [1, 2, 3, 4]:

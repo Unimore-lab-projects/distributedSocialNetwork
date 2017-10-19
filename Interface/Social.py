@@ -108,7 +108,6 @@ class StatusBody(FloatLayout):
         self.myNode.insertPost(text_content=self.statusin.text)
         # Post(post_content=self.statusin.text, username="username")
 
-
     # variabili globali che servono per collegare il textinput al PostText
     def on_enter(self, *args):
         self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
@@ -175,19 +174,20 @@ class Comments(GridLayout):
             self.add_widget(textComment)
 
 
-class MyImage(Image):
-    """
-    caratteristiche predefinite dell'immagine di un tipo post: immagine
-    ottimizzate per il BoxLayout
-    """
-
-    def __init__(self, name, *args):
-        super(MyImage, self).__init__(*args)
-        self.source = name
-        self.size_hint = (None, None)
-        self.width = 430
-        self.height = 280
-        self.pos_hint = {'center_x': 0.5, 'center_y': 0.71}
+#
+# class MyImage(Image):
+#     """
+#     caratteristiche predefinite dell'immagine di un tipo post: immagine
+#     ottimizzate per il BoxLayout
+#     """
+#
+#     def __init__(self, name, *args):
+#         super(MyImage, self).__init__(*args)
+#         self.source = name
+#         self.size_hint = (None, None)
+#         self.width = 430
+#         self.height = 280
+#         self.pos_hint = {'center_x': 0.5, 'center_y': 0.71}
 
 
 class MyText(Label):
@@ -230,9 +230,10 @@ class Post(GridLayout):
     Il float layout permette di posizionare i widget a piacere, senza vincoli oltre a size_hint.
     """
 
-    def __init__(self, post_type='posttext', post_content="post content", username="username", commentList=None, *args):
+    def __init__(self, post_type='posttext', post_id=0, post_content="post content", username="username", commentList=None, *args):
         super(Post, self).__init__(*args)
         self.cols = 1
+        self.post_id=post_id
         with self.canvas.before:
             Color(0.96, 0.96, 0.96, 1)  # grigio exa:F7F7F7
             self.rect = Rectangle(size=self.size, pos=self.pos)
@@ -311,13 +312,35 @@ class MyWidget(GridLayout):
         deferredList = self.myNode.buildTimeline()
         deferredList.addCallback(self.__got_timeline)
 
-    def __got_timeline(self, post_package_list):
-        for pack in post_package_list:
+    def __got_timeline(self, all_package_list):
+        my_posts=all_package_list[0][1]
+        friends_posts=all_package_list[1][1]
+        post_list = []
+        #my posts
+        for pack in my_posts:
+            text = pack.result.post.text_content
+            new_post = Post('posttext', post_content=text, username=pack.result.username, post_id=pack.result.post.post_id)
+            post_list.append(new_post)
+            # self.add_widget(new_post)
+            pass
+        #friends posts
+        for pack in friends_posts:
             text = pack.post.text_content
-            new_post = Post('posttext', text, pack.username)
+            new_post = Post('posttext', post_content=text, username=pack.username, post_id=pack.post.post_id)
+            post_list.append(new_post)
 
-            self.add_widget(new_post)
+            # self.add_widget(new_post)
+            pass
+
+
+        # ordinamento in base al post_id = timestamp
+        post_list.sort(key=lambda x: x.post_id, reverse=True)
+
+        for post in post_list:
+            self.add_widget(post)
+
         pass
+
 
 
 class MySocialApp(App, pb.Root):
@@ -325,9 +348,10 @@ class MySocialApp(App, pb.Root):
     Classe container per la scrollview, contiene lo scheletro dell'interfaccia
     """
 
-    def __init__(self, myWidget):
+    def __init__(self, thisNode):
         super(MySocialApp, self).__init__()
-        self.myWidget = myWidget
+        self.thisNode = thisNode
+        self.myWidget = MyWidget(thisNode)
         pass
 
     # funzione che fa comparire il DropDownMenu per cercare la stringa che si inserisce nella "searchuser"
@@ -365,13 +389,16 @@ class MySocialApp(App, pb.Root):
         # refresh_btn.on_press = myWidget.load_timeline
         # main_timeline_btn.bind(on_press=switch_timelines_fcn)
 
+        reload_btn = ActionButton(text="RELOAD")
+
         action_bar = ActionBar(background_color=(0, 0, 0, 0.1), pos_hint={'top': 1})
         action_view = ActionView()
         action_view.add_widget(menu_bar)
+        action_view.add_widget(reload_btn)
+
         # aw.add_widget(refresh_btn)
         # aw.add_widget(main_timeline_btn)
         action_bar.add_widget(action_view)
-
         Window.add_widget(action_bar, canvas=None)
 
         # layout ricerca utenti
@@ -395,8 +422,7 @@ class MySocialApp(App, pb.Root):
 
         Window.add_widget(searchuser)
         Window.add_widget(searchbtn)
-
-        sv = ScrollView(size_hint=(None, None),
+        self.sv = ScrollView(size_hint=(None, None),
                         size=(500, Window.height),
                         do_scroll_x=False,
                         do_scroll_y=True,
@@ -406,28 +432,32 @@ class MySocialApp(App, pb.Root):
         # self.myWidget.add_widget(Timeline())
         Window.add_widget(StatusBody(self.myWidget.myNode))
 
-        sv.add_widget(self.myWidget)
+        self.sv.add_widget(self.myWidget)
 
-        return sv
+        reload_btn.on_press = self.reload_mywidget
+
+        return self.sv
 
     def get_ref_btn(self):
         return self.ab
 
+    def reload_mywidget(self):
+        print("reload mywidget")
+        self.sv.clear_widgets()
+        self.myWidget = MyWidget(self.thisNode)
+        self.sv.add_widget(self.myWidget)
 
 if __name__ == '__main__':
-    # TODO ricarire la timeline per i nuovi post.
     # TODO eventualmente mostrare i propri post.
     # TODO caricare i commenti.
     # TODO postare i commenti.
     # TODO mostrare ricerca known nodes.
 
-    thisNode = node('../peer1.config')
+
+    thisNode = node('../peer4.config')
     thisNode.populateKnownNodes()
-    # inter = thisNode.get_interrogator()
-
-
-    myWidget = MyWidget(thisNode)
-    app = MySocialApp(myWidget)
-    reactor.listenTCP(8000, pb.PBServerFactory(app))
+    port = int(thisNode.config['peer_port'])
+    app = MySocialApp(thisNode)
+    reactor.listenTCP(port, pb.PBServerFactory(app))
 
     app.run()
