@@ -179,11 +179,12 @@ class node(pb.Root):
     def __waitForMyUser(self, myUser, deferred):
         myNode = Known_node()
         myNode.user_id = str(myUser.user_id)
-        # myNode.username=myUser.username
+        myNode.username = myUser.username
         myNode.address = self.config["peer_address"]
         myNode.port = self.config["peer_port"]
         myNode.last_update = datetime.today()
         deferred.callback(myNode)
+        self.myNode = myNode
         pass
 
     def remote_getKnownNodes(self, callerNode):
@@ -276,11 +277,13 @@ class node(pb.Root):
         pass
 
     def remote_insertComment(self, callerNode, content, post_id):
+        print("remote %s " % content)
         self.insertComment(comment=None, post_id=post_id, content=content,
                            user_id=callerNode.user_id, username=callerNode.username)
         pass
 
     def insertComment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
+        print("insertComment %s " % content)
         self.insertor.insert_comment(comment=comment, post_id=post_id,
                                      user_id=user_id, username=username, content=content)
         pass
@@ -292,7 +295,7 @@ class node(pb.Root):
 
     def sendComment(self, content, post_id, remote_user_id):
         # self.interrogator.get_my_user().addCallback(self._sendCommentCallback,content,post_id)
-        myUserDeferred = self.interrogator.get_my_user()
+        myUserDeferred = self.getMyNode()
         remoteNodeDeferred = self.interrogator.get_node(remote_user_id)
         DeferredList([myUserDeferred, remoteNodeDeferred]).addCallback(self._sendCommentCallback,
                                                                        content, post_id)
@@ -351,7 +354,7 @@ class node(pb.Root):
     pass
 
     def buildTimeline(self):
-        friendsTimeline= Deferred()
+        friendsTimeline = Deferred()
         myNodeDeferred = self.getMyNode()
         myFriendsDeferred = self.interrogator.get_known_nodes()
         myTimelineDeferred = self.interrogator.get_recents()

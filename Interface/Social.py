@@ -159,16 +159,16 @@ class Comments(GridLayout):
         # self.padding=5
 
         for comment in commentList:
-            user = comment[0]
-            text = comment[1]
+            user = comment.username
+            text = comment.content
             textComment = Label(text=user + ': ' + text,
                                 size_hint=(None, None),
                                 size=(450, 20),
                                 color=(0, 0, 255, 1),
                                 font_size='12sp',
-                                # text_size=(self.width, None),
+                                text_size=(self.width, None),
                                 halign='left',
-                                # pos_hint={'x':0.6}
+                                pos_hint={'x': 0.6}
                                 )
             # textComment = Button(text=ucomment)
             self.add_widget(textComment)
@@ -230,10 +230,15 @@ class Post(GridLayout):
     Il float layout permette di posizionare i widget a piacere, senza vincoli oltre a size_hint.
     """
 
-    def __init__(self, post_type='posttext', post_id=0, post_content="post content", username="username", commentList=None, *args):
+    def __init__(self, myNode, post_id=0, post_content="post content", username="username",
+                 remote_user_id=None,
+                 commentList=None, *args):
         super(Post, self).__init__(*args)
         self.cols = 1
-        self.post_id=post_id
+        self.remote_user_id = remote_user_id
+        self.myNode = myNode
+        self.post_id = post_id
+        self.username = username
         with self.canvas.before:
             Color(0.96, 0.96, 0.96, 1)  # grigio exa:F7F7F7
             self.rect = Rectangle(size=self.size, pos=self.pos)
@@ -249,13 +254,14 @@ class Post(GridLayout):
         self.width = 450
         self.padding = [5, 5]
         self.spacing = 5
-        username_widget = Label(text=username,
+        username_widget = Label(text=self.username,
                                 color=(0, 0, 255, 1),
                                 halign="left",
                                 font_size='15sp',
                                 height=20,
                                 size_hint=(None, None),
-                                pos_hint={'x': 0, 'y': 0.89})
+                                text_size=(self.width, None),
+                                pos_hint={'x': 0.5})
 
         my_text = MyText(post_content)
 
@@ -277,20 +283,26 @@ class Post(GridLayout):
             self.add_widget(comments)
             self.height += comments.height
 
+        self.comm_input = TextInput(text="insert a comment!",
+                                    foreground_color=(0, 0, 0, 0.4),
+                                    multiline=False,
+                                    size_hint=(None, None),
+                                    width=self.width / 2,
+                                    height=30,
+                                    # pos_hint={'center_x': 0.50, 'top': 0.98},
+                                    font_size='12sp',
+                                    # background_normal='textinput2.png')
+                                    )
+        self.comm_input.bind(on_text_validate=self.insert_comment)
 
+        self.height += self.comm_input.height
+        self.add_widget(self.comm_input)
+        # pubblica i commenti quando si preme invio
 
-            # pubblica i commenti quando si preme invio
-
-    # def on_enter(self, *args):
-    #     self.comments.text = (self.comments.text + "\n" + self.txt.text)
-
-    def btn_pressed(self, *args):
-        self.count += 1
-        self.like_num.text = str(self.count)
-
-    # funzione che pubblica i commenti cliccando sul bottone
-    def btn_pressed2(self, *args):
-        self.comments.text = (self.comments.text + "\n" + self.txt.text)
+    def insert_comment(self, x):
+        text = self.comm_input.text
+        print(text)
+        self.myNode.sendComment(content=text, post_id=self.post_id, remote_user_id=self.remote_user_id)
 
 
 class MyWidget(GridLayout):
@@ -313,25 +325,27 @@ class MyWidget(GridLayout):
         deferredList.addCallback(self.__got_timeline)
 
     def __got_timeline(self, all_package_list):
-        my_posts=all_package_list[0][1]
-        friends_posts=all_package_list[1][1]
+        my_posts = all_package_list[0][1]
+        friends_posts = all_package_list[1][1]
         post_list = []
-        #my posts
+        # my posts
         for pack in my_posts:
             text = pack.result.post.text_content
-            new_post = Post('posttext', post_content=text, username=pack.result.username, post_id=pack.result.post.post_id)
+            new_post = Post(myNode=self.myNode, post_content=text, username=pack.result.username,
+                            post_id=pack.result.post.post_id, commentList=pack.result.commentList,
+                            remote_user_id=pack.result.post.user_id)
             post_list.append(new_post)
             # self.add_widget(new_post)
             pass
-        #friends posts
+        # friends posts
         for pack in friends_posts:
             text = pack.post.text_content
-            new_post = Post('posttext', post_content=text, username=pack.username, post_id=pack.post.post_id)
+            new_post = Post(myNode=self.myNode, post_content=text, username=pack.username, post_id=pack.post.post_id,
+                            commentList=pack.commentList, remote_user_id=pack.post.user_id)
             post_list.append(new_post)
 
             # self.add_widget(new_post)
             pass
-
 
         # ordinamento in base al post_id = timestamp
         post_list.sort(key=lambda x: x.post_id, reverse=True)
@@ -340,7 +354,6 @@ class MyWidget(GridLayout):
             self.add_widget(post)
 
         pass
-
 
 
 class MySocialApp(App, pb.Root):
@@ -423,10 +436,10 @@ class MySocialApp(App, pb.Root):
         Window.add_widget(searchuser)
         Window.add_widget(searchbtn)
         self.sv = ScrollView(size_hint=(None, None),
-                        size=(500, Window.height),
-                        do_scroll_x=False,
-                        do_scroll_y=True,
-                        pos_hint={'center_x': 0.5, 'center_y': 0.5})
+                             size=(500, Window.height),
+                             do_scroll_x=False,
+                             do_scroll_y=True,
+                             pos_hint={'center_x': 0.5, 'center_y': 0.5})
 
         # user_timeline = UserTimeline(self.myWidget.myNode)
         # self.myWidget.add_widget(Timeline())
@@ -447,9 +460,8 @@ class MySocialApp(App, pb.Root):
         self.myWidget = MyWidget(self.thisNode)
         self.sv.add_widget(self.myWidget)
 
+
 if __name__ == '__main__':
-    # TODO caricare i commenti.
-    # TODO postare i commenti.
     # TODO mostrare ricerca known nodes.
 
 
