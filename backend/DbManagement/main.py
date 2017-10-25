@@ -18,21 +18,21 @@ log.startLogging(sys.stdout)
 # apre la connessione
 from random import randint
 
-peer = 2
+peer = 1
 dbpool = open_connection(dbname="db_peer%s" % peer, user="peer%s" % peer)
 # istanza per i metodi di inserimento nel db
 inser = DatabaseInsertor(dbpool)
 inter = DatabaseInterrogator(dbpool)
 Registry.DBPOOL = dbpool
 
-# inser.insert_friend(user_id='e9ef0227-a8dd-40f5-b3d6-83060f2d3cb6', username='peer2')
-# # inser.insert_friend(user_id='211692da-0633-47d7-b194-6d24ad345e0a', username='peer4')
-# inser.insert_friend(user_id='e9d7d382-d557-4d54-9392-d1eb4006444c', username='peer3')
-# inser.insert_friend(user_id='0c0dde54-18f6-48c2-aedc-a01934e4200b', username='peer1')
+inser.insert_friend(user_id='e9ef0227-a8dd-40f5-b3d6-83060f2d3cb6', username='peer2')
+inser.insert_friend(user_id='211692da-0633-47d7-b194-6d24ad345e0a', username='peer4')
+inser.insert_friend(user_id='e9d7d382-d557-4d54-9392-d1eb4006444c', username='peer3')
+inser.insert_friend(user_id='0c0dde54-18f6-48c2-aedc-a01934e4200b', username='peer1')
 
 
 # inser.insert_post(None,text_content="bzfljgsjgjds!")
-inser.insert_comment(post_id='150343020466671',user_id='0c0dde54-18f6-48c2-aedc-a01934e4200b',username='peer1',content="COMMENTOOO in faccia agli haters")
+# inser.insert_comment(post_id='150343020466671',user_id='0c0dde54-18f6-48c2-aedc-a01934e4200b',username='peer1',content="COMMENTOOO in faccia agli haters")
 # def populateNodes():
 #     for i in [1, 2, 3, 4]:
 #         inter = DatabaseInterrogator(open_connection(user="peer%s" % i, dbname="db_peer%s" % i))

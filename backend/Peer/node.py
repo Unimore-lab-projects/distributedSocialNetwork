@@ -139,10 +139,12 @@ class nodeConnections:
 
 
 class node(pb.Root):
-    def __init__(self, configFile):
+    def __init__(self, configFile, port=None):
         # start_logging()
 
         self.config = getDictFromFile(configFile, '=')
+        if port:
+            self.config['port'] = port
         # self.dbpool = openConnectionOnDB(self.config["db_name"], self.config["db_port"], self.config["db_user"],
         #                                  self.config["db_password"], self.config["db_address"])
         self.dbpool = open_connection(user=self.config["db_user"], dbname=self.config['db_name'])
@@ -205,6 +207,13 @@ class node(pb.Root):
             resultNodesDict[str(i)].user_id = uuidString
 
         deferred.callback(resultNodesDict)
+        pass
+
+    def getPostsAndComments(self, callerNode, days):
+        result = Deferred()
+        self.incomingConnection(callerNode)
+        self.interrogator.get_recents(days).addCallback(self.__waitForPackageList, result)
+        return result
         pass
 
     def remote_getPostsAndComments(self, callerNode, days):

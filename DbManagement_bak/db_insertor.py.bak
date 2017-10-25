@@ -1,24 +1,28 @@
 # -*- coding: utf-8 -*
+import random
 import time
 from uuid import uuid4
+
 from psycopg2 import extras, extensions
-from twisted.python import log
-from db_interrogator import *
-from debug_messages import *
 from twisted.internet import defer, reactor
-import random
+
+from db_interrogator import *
+
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class DatabaseInsertor:
-    def __init__(self, dbpool, nodeInfo):
+    def __init__(self, dbpool):
         self.dbpool = dbpool
         Registry.DBPOOL = dbpool
-        self.nodeInfo = nodeInfo
-        # logging necessario
-        # enable_logging()
+        # logger necessario
+        # enable_logger()
         # InteractionBase.LOG = True
         # log.startLogging(sys.stdout)
-        # end logging
+        # end logger
 
     # INSERT USER
 
@@ -27,11 +31,11 @@ class DatabaseInsertor:
 
     def __user_done(self, user):
         if len(user.errors) > 0:
-            logging.error(user.errors)
+            logger.error(user.errors)
             return None
         # return My_user.find(limit=1)
         d = defer.Deferred()
-        logging.debug("FROM insert_my_user: my user created")
+        logger.debug("FROM insert_my_user: my user created")
         return reactor.callLater(2, d.addCallback, self.__done)
 
     def __check_existence(self, my_user, name):
@@ -41,65 +45,67 @@ class DatabaseInsertor:
             uid = uuid4()
             extensions.adapt(uid).getquoted()
             me = My_user(user_id=uid, username=name)
-            logging.debug("FROM insert_my_user: my user not existing. creating %s with uuid %s" % (name, uid))
+            logger.debug("FROM insert_my_user: my user not existing. creating.")
             return me.save().addCallbacks(self.__user_done, log.err)
         else:
-            logging.debug("FROM insert_my_user: user %s already existing" % name)
+            logger.debug("FROM insert_my_user: user already existing")
             return my_user
 
     def insert_my_user(self, name):
         """controlla se esiste già un utente"""
-        logging.debug("FROM insert_my_user: inserting my username: %s generating uuid" % name)
+        logger.debug("FROM insert_my_user: inserting my username: %s generating uuid" % name)
         return My_user.find(limit=1).addCallback(self.__check_existence, name)
 
     # INSERT O UPDATE di un NODE
 
     def __node_created(self, node):
         if len(node.errors) > 0:
-            logging.error('FROM insert_node: %s errors in node creation' % len(node.errors))
-            logging.error(node.errors)
+            logger.error('FROM insert_node: %s errors in node creation' % len(node.errors))
+            logger.error(node.errors)
         else:
-            logging.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (
+            logger.debug("FROM insert_node: Node created. uuid is %s and address is %s : %s" % (
                 node.user_id, node.address, node.port))
 
     def __node_updated(self, node):
         if len(node.errors) > 0:
-            logging.error('FROM insert_node: %s errors in node update' % len(node.errors))
-            logging.error(node.errors)
+            logger.error('FROM insert_node: %s errors in node update' % len(node.errors))
+            logger.error(node.errors)
         else:
-            logging.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (
+            logger.debug("FROM insert_node: Node updated. uuid is %s and address is %s : %s" % (
                 node.user_id, node.address, node.port))
 
-    def __update_node(self, node, user_id, address, port, last_update):
+    def __update_node(self, node, username, user_id, address, port, last_update):
         if node is None:
-            logging.debug("FROM insert_node: creating a new node")
+            logger.debug("FROM insert_node: creating a new node")
             # node doesn't exists
             node = Known_node()
+            node.username = username
             node.user_id = user_id
             node.address = address
             node.port = port
             node.last_update = datetime.today()
             node.save().addCallback(self.__node_created)
-
         else:
             if node.last_update < last_update:
-                logging.debug(
+                logger.debug(
                     "FROM insert_node: updating existing node %s new timestamp is %s" % (
                         node.user_id, node.last_update))
                 attrs = {'address': address, 'port': port, 'last_update': last_update}
                 node.updateAttrs(attrs)
                 node.save().addCallback(self.__node_updated)
             else:
-                logging.debug("FROM insert_node: existing is already the most recent update")
+                logger.debug("FROM insert_node: existing is already the most recent update")
 
-    def insert_node(self, node=None, user_id=None, address=None, port=None, last_update=None):
+    def insert_node(self, node=None, username=None, user_id=None, address=None, port=None, last_update=None):
         if node is None:
-            Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, user_id, address,
+            Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__update_node, username, user_id,
+                                                                               address,
                                                                                port,
                                                                                last_update)
         else:
             # if Node != None use it
             Known_node.find(where=['user_id=?', node.user_id], limit=1).addCallback(self.__update_node, node.user_id,
+                                                                                    node.username,
                                                                                     node.address, node.port,
                                                                                     node.last_update)
 
@@ -110,60 +116,45 @@ class DatabaseInsertor:
     # INSERT A FRIEND
     def __done_save_friend(self, result):
         if len(result.errors) > 0:
-            logging.error('%s errors adding a friend:' % len(result.errors))
-            logging.error(result.errors)
+            logger.error('%s errors adding a friend:' % len(result.errors))
+            logger.error(result.errors)
             return False
         else:
-            logging.debug("friend added. uuid is %s and username is %s" % (result.user_id, result.username))
+            logger.debug("friend added. uuid is %s and username is %s" % (result.user_id, result.username))
             return True
 
-    def __friend_found(self, result, user_id, username):
+    def __friend_found(self, result, friend):
         if result is None:
-            logging.debug("creating friend")
-            friend = Friend()
-            friend.user_id = user_id
-            friend.username = username
+            logger.debug("creating friend")
             friend.save().addCallback(self.__done_save_friend)
         else:
-            logging.debug("friend already existing. exiting")
+            logger.debug("friend already existing. exiting")
             return True
 
-    def __node_found(self, node, user_id, username):
+    def __node_found(self, node, friend):
         if node is None:
             # nodo non trovato
-            logging.debug("Nodo sconosciuto")
+            logger.debug("Nodo sconosciuto")
             return False
         else:
-            Friend.find(where=['user_id=?', user_id], limit=1).addCallback(self.__friend_found, user_id, username)
+            Friend.find(where=['user_id=?'], limit=1).addCallback(self.__friend_found, friend)
 
-    def search_friend(self, my_user, user_id, username=None):
+    def insert_friend(self, friend):
         """Ritorna False se il nodo non è stato trovato"""
-        if user_id == my_user.user_id:
-            pass
-
+        from twisted.internet import defer
         self.d = defer.Deferred()
-        self.d = Known_node.find(where=['user_id=?', user_id], limit=1).addCallback(self.__node_found, user_id,
-                                                                                    username)
+        self.d = Known_node.find(where=['user_id=?', friend.user_id], limit=1).addCallback(self.__node_found, friend)
         return self.d
-
-    def insert_me_as_known_node(self, my_user, user_id, username=None):
-        d = defer.Deferred()
-
-
-    def insert_friend(self,user_id, username=None):
-        d = defer.Deferred()
-        d = My_user.find(limit=1).addCallback()
-        return d
 
     # INSERT A POST
 
     def __done_save_post(self, post):
         if len(post.errors) > 0:
-            logging.error('%s errors adding a post:' % len(post.errors))
-            logging.error(post.errors)
+            logger.error('%s errors adding a post:' % len(post.errors))
+            logger.error(post.errors)
             return False
         else:
-            logging.debug("post added. post_id is %s" % post.post_id)
+            logger.debug("post added. post_id is %s" % post.post_id)
             return True
 
     def __save_new_post(self, my_user, text_content, path_to_imagefile):
@@ -177,7 +168,7 @@ class DatabaseInsertor:
     def insert_post(self, post=None, text_content=None, path_to_imagefile=None):
         if post is None:
             if (text_content is None) & (path_to_imagefile is None):
-                logging.error("il post non può essere vuoto")
+                logger.error("il post non può essere vuoto")
                 return False
             else:
                 inter = DatabaseInterrogator(self.dbpool)
@@ -187,27 +178,23 @@ class DatabaseInsertor:
 
     # INSERT A COMMENT
 
-    def __comment_errback(self,e):
-        print("Errore inserimento commento")
-        print(e)
-
     def __done_save_comment(self, comment):
         if len(comment.errors) > 0:
-            logging.error('%s errors adding a comment:' % len(comment.errors))
-            logging.error(comment.errors)
+            logger.error('%s errors adding a comment:' % len(comment.errors))
+            logger.error(comment.errors)
             return False
         else:
-            logging.debug("comment added. comment_id is %s" % comment.comment_id)
+            logger.debug("comment added. comment_id is %s" % comment.comment_id)
             return True
 
     def __post_found(self, post, comment):
         if post is None:
             # post non trovato
-            logging.debug("Post sconosciuto")
+            logger.debug("Post sconosciuto")
             return False
         else:
-            # logging.debug("Corresponding post found: %s" % post.post_id)
-            return comment.save().addCallback(self.__done_save_comment).addErrback(self.__comment_errback)
+            logger.debug("Corresponding post found: %s" % post.post_id)
+            return comment.save().addCallback(self.__done_save_comment)
 
     def __check_comment(self, result, comment):
         if not result:
@@ -217,7 +204,6 @@ class DatabaseInsertor:
     def insert_comment(self, comment=None, post_id=None, user_id=None, username=None, content=None):
         if comment is None:
             comment = Comment()
-            comment.comment_id = int(str(int(time.time())) + str(random.randint(0, 99999)))
             comment.post_id = post_id
             comment.user_id = user_id
             comment.username = username

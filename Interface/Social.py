@@ -1,8 +1,15 @@
 # per cambiare schermata
-from subprocess import Popen
 from kivy.support import install_twisted_reactor
 
+
 install_twisted_reactor()
+import logging
+
+from kivy.graphics.context_instructions import Color
+from kivy.graphics.vertex_instructions import Rectangle
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 
 from twisted.internet import reactor
 from twisted.spread import pb
@@ -15,16 +22,18 @@ from kivy.uix.actionbar import ActionPrevious, ActionButton, ActionBar, ActionVi
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.button import Button
 from kivy.uix.dropdown import DropDown
-from kivy.uix.stacklayout import StackLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
-from functools import partial
 
 Config.set('graphics', 'fullscreen', 'auto')
+
+import logging
+
+logging = logging.getLogger(__name__)
 
 
 # funzione per cambiare schermata
@@ -103,8 +112,8 @@ class StatusBody(FloatLayout):
         self.add_widget(pub_btn)
 
     def pubblica_post(self):
-        print("bnt_pressed")
-        print("statusin %s " % self.statusin.text)
+        logging.debug("bnt_pressed")
+        logging.debug("statusin %s " % self.statusin.text)
         self.myNode.insertPost(text_content=self.statusin.text)
         # Post(post_content=self.statusin.text, username="username")
 
@@ -174,56 +183,6 @@ class Comments(GridLayout):
             self.add_widget(textComment)
 
 
-#
-# class MyImage(Image):
-#     """
-#     caratteristiche predefinite dell'immagine di un tipo post: immagine
-#     ottimizzate per il BoxLayout
-#     """
-#
-#     def __init__(self, name, *args):
-#         super(MyImage, self).__init__(*args)
-#         self.source = name
-#         self.size_hint = (None, None)
-#         self.width = 430
-#         self.height = 280
-#         self.pos_hint = {'center_x': 0.5, 'center_y': 0.71}
-
-
-class MyText(Label):
-    """
-    caratteristiche predefinite del testo
-    di un tipo post: testo
-    """
-
-    def __init__(self, mytext, *args):
-        super(MyText, self).__init__(*args)
-
-        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
-        with self.canvas.before:
-            Color(0.937, 0.937, 0.937, 0.3)  # grigio 10%
-            self.rect = Rectangle(source='verythin.png', size=self.size, pos=self.pos)
-            # se non vi piace la cornice mettere a 1 l'indice 'a' del color e scommentare la riga sotto
-            # self.rect = Rectangle(size=self.size, pos=self.pos)
-
-        def update_rect(instance, value):
-            instance.rect.pos = instance.pos
-            instance.rect.size = instance.size
-
-        # aggiorna la posizione del rettangolo/layout
-        self.bind(pos=update_rect, size=update_rect)
-
-        self.text = mytext
-        self.font_size = "16sp"
-        self.color = (0, 0.38, 0.88, 1)
-        # self.color = (0, 0, 0, 1)
-        self.size_hint = (None, None)
-        self.width = 440
-        self.height = 80
-        self.halign = 'left'
-        self.pos_hint = {'center_x': 0.5, 'center_y': 0.71}
-
-
 class Post(GridLayout):
     """
     Classe che serve per gestire il corpo del post.
@@ -234,9 +193,11 @@ class Post(GridLayout):
                  remote_user_id=None,
                  commentList=None, *args):
         super(Post, self).__init__(*args)
+        thisNode.getMyNode().addCallback(self.__got_my_user_info)
         self.cols = 1
         self.remote_user_id = remote_user_id
         self.myNode = myNode
+
         self.post_id = post_id
         self.username = username
         with self.canvas.before:
@@ -299,10 +260,71 @@ class Post(GridLayout):
         self.add_widget(self.comm_input)
         # pubblica i commenti quando si preme invio
 
+    def __got_my_user_info(self, result):
+        self.my_user_info = result
+
     def insert_comment(self, x):
         text = self.comm_input.text
-        print(text)
-        self.myNode.sendComment(content=text, post_id=self.post_id, remote_user_id=self.remote_user_id)
+        if self.my_user_info.user_id != self.remote_user_id:
+            self.myNode.sendComment(content=text, post_id=self.post_id, remote_user_id=self.remote_user_id)
+        else:
+            self.myNode.insertComment(comment=None,
+                                      post_id=self.post_id,
+                                      user_id=self.my_user_info.user_id,
+                                      username=self.my_user_info.username,
+                                      content=text)
+
+        print("Comment inserted: %s " % text)
+
+
+#
+# class MyImage(Image):
+#     """
+#     caratteristiche predefinite dell'immagine di un tipo post: immagine
+#     ottimizzate per il BoxLayout
+#     """
+#
+#     def __init__(self, name, *args):
+#         super(MyImage, self).__init__(*args)
+#         self.source = name
+#         self.size_hint = (None, None)
+#         self.width = 430
+#         self.height = 280
+#         self.pos_hint = {'center_x': 0.5, 'center_y': 0.71}
+
+
+class MyText(Label):
+    """
+    caratteristiche predefinite del testo
+    di un tipo post: testo
+    """
+
+    def __init__(self, mytext, *args):
+        super(MyText, self).__init__(*args)
+
+        # aggiungo uno sfondo al layout, aggiungendo un rettangolo colorato
+        with self.canvas.before:
+            Color(0.937, 0.937, 0.937, 0.3)  # grigio 10%
+            self.rect = Rectangle(source='verythin.png', size=self.size, pos=self.pos)
+            # se non vi piace la cornice mettere a 1 l'indice 'a' del color e scommentare la riga sotto
+            # self.rect = Rectangle(size=self.size, pos=self.pos)
+
+        def update_rect(instance, value):
+            instance.rect.pos = instance.pos
+            instance.rect.size = instance.size
+
+        # aggiorna la posizione del rettangolo/layout
+        self.bind(pos=update_rect, size=update_rect)
+
+        self.text = mytext
+        self.font_size = "16sp"
+        self.color = (0, 0.38, 0.88, 1)
+        # self.color = (0, 0, 0, 1)
+        self.size_hint = (None, None)
+        self.width = 440
+        self.height = 80
+        self.halign = 'left'
+        self.pos_hint = {'center_x': 0.5, 'center_y': 0.71}
 
 
 class MyWidget(GridLayout):
@@ -364,10 +386,16 @@ class MySocialApp(App, pb.Root):
     def __init__(self, thisNode):
         super(MySocialApp, self).__init__()
         self.thisNode = thisNode
+        thisNode.getMyNode().addCallback(self.__got_my_user_info)
         self.myWidget = MyWidget(thisNode)
         pass
 
-    # funzione che fa comparire il DropDownMenu per cercare la stringa che si inserisce nella "searchuser"
+    def __got_my_user_info(self, result):
+        self.my_user_info = result
+
+
+        # funzione che fa comparire il DropDownMenu per cercare la stringa che si inserisce nella "searchuser"
+
     def build(self):
         def on_enter2(self, *args):
             # DropDownMenu
@@ -455,7 +483,7 @@ class MySocialApp(App, pb.Root):
         return self.ab
 
     def reload_mywidget(self):
-        print("reload mywidget")
+        logging.debug("reload mywidget")
         self.sv.clear_widgets()
         self.myWidget = MyWidget(self.thisNode)
         self.sv.add_widget(self.myWidget)
@@ -468,6 +496,7 @@ if __name__ == '__main__':
     thisNode = node('../peer4.config')
     thisNode.populateKnownNodes()
     port = int(thisNode.config['peer_port'])
+    # port = 8003
     app = MySocialApp(thisNode)
     reactor.listenTCP(port, pb.PBServerFactory(app))
 
