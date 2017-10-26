@@ -1,0 +1,434 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.6.5
+-- Dumped by pg_dump version 9.6.5
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE; Schema: public; Owner: peer1
+--
+
+CREATE SEQUENCE comments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE comments_id_seq OWNER TO peer1;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: comments; Type: TABLE; Schema: public; Owner: peer1
+--
+
+CREATE TABLE comments (
+    content character varying(512),
+    user_id uuid NOT NULL,
+    id integer DEFAULT nextval('comments_id_seq'::regclass) NOT NULL,
+    comment_id bigint NOT NULL,
+    post_id bigint NOT NULL,
+    username character varying(16)
+);
+
+
+ALTER TABLE comments OWNER TO peer1;
+
+--
+-- Name: friends_id_seq; Type: SEQUENCE; Schema: public; Owner: peer1
+--
+
+CREATE SEQUENCE friends_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE friends_id_seq OWNER TO peer1;
+
+--
+-- Name: friends; Type: TABLE; Schema: public; Owner: peer1
+--
+
+CREATE TABLE friends (
+    user_id uuid NOT NULL,
+    username character varying(16),
+    id integer DEFAULT nextval('friends_id_seq'::regclass) NOT NULL
+);
+
+
+ALTER TABLE friends OWNER TO peer1;
+
+--
+-- Name: known_nodes; Type: TABLE; Schema: public; Owner: peer1
+--
+
+CREATE TABLE known_nodes (
+    user_id uuid NOT NULL,
+    address cidr NOT NULL,
+    port smallint NOT NULL,
+    last_update timestamp without time zone NOT NULL,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE known_nodes OWNER TO peer1;
+
+--
+-- Name: known_nodes_id_seq; Type: SEQUENCE; Schema: public; Owner: peer1
+--
+
+CREATE SEQUENCE known_nodes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE known_nodes_id_seq OWNER TO peer1;
+
+--
+-- Name: known_nodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: peer1
+--
+
+ALTER SEQUENCE known_nodes_id_seq OWNED BY known_nodes.id;
+
+
+--
+-- Name: my_user; Type: TABLE; Schema: public; Owner: peer1
+--
+
+CREATE TABLE my_user (
+    user_id uuid NOT NULL,
+    username character varying(16),
+    id integer NOT NULL
+);
+
+
+ALTER TABLE my_user OWNER TO peer1;
+
+--
+-- Name: my_user_id_seq; Type: SEQUENCE; Schema: public; Owner: peer1
+--
+
+CREATE SEQUENCE my_user_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE my_user_id_seq OWNER TO peer1;
+
+--
+-- Name: my_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: peer1
+--
+
+ALTER SEQUENCE my_user_id_seq OWNED BY my_user.id;
+
+
+--
+-- Name: posts_id_seq; Type: SEQUENCE; Schema: public; Owner: peer1
+--
+
+CREATE SEQUENCE posts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE posts_id_seq OWNER TO peer1;
+
+--
+-- Name: posts; Type: TABLE; Schema: public; Owner: peer1
+--
+
+CREATE TABLE posts (
+    user_id uuid NOT NULL,
+    path_to_imagefile character varying(512),
+    text_content character varying(512),
+    id integer DEFAULT nextval('posts_id_seq'::regclass) NOT NULL,
+    post_id bigint NOT NULL
+);
+
+
+ALTER TABLE posts OWNER TO peer1;
+
+--
+-- Name: known_nodes id; Type: DEFAULT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY known_nodes ALTER COLUMN id SET DEFAULT nextval('known_nodes_id_seq'::regclass);
+
+
+--
+-- Name: my_user id; Type: DEFAULT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY my_user ALTER COLUMN id SET DEFAULT nextval('my_user_id_seq'::regclass);
+
+
+--
+-- Data for Name: comments; Type: TABLE DATA; Schema: public; Owner: peer1
+--
+
+COPY comments (content, user_id, id, comment_id, post_id, username) FROM stdin;
+ciasood	211692da-0633-47d7-b194-6d24ad345e0a	5	150889786622239	150841444523726	peer4
+\.
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: peer1
+--
+
+SELECT pg_catalog.setval('comments_id_seq', 5, true);
+
+
+--
+-- Data for Name: friends; Type: TABLE DATA; Schema: public; Owner: peer1
+--
+
+COPY friends (user_id, username, id) FROM stdin;
+e9d7d382-d557-4d54-9392-d1eb4006444c	peer3	4
+e9ef0227-a8dd-40f5-b3d6-83060f2d3cb6	peer2	5
+211692da-0633-47d7-b194-6d24ad345e0a	peer4	6
+\.
+
+
+--
+-- Name: friends_id_seq; Type: SEQUENCE SET; Schema: public; Owner: peer1
+--
+
+SELECT pg_catalog.setval('friends_id_seq', 6, true);
+
+
+--
+-- Data for Name: known_nodes; Type: TABLE DATA; Schema: public; Owner: peer1
+--
+
+COPY known_nodes (user_id, address, port, last_update, id) FROM stdin;
+e9ef0227-a8dd-40f5-b3d6-83060f2d3cb6	127.0.0.1/32	8001	2017-08-21 18:21:01.618872	2
+211692da-0633-47d7-b194-6d24ad345e0a	127.0.0.1/32	8003	2017-10-26 14:59:46.213863	16
+e9d7d382-d557-4d54-9392-d1eb4006444c	127.0.0.1/32	8002	2017-10-11 05:51:15.173195	15
+\.
+
+
+--
+-- Name: known_nodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: peer1
+--
+
+SELECT pg_catalog.setval('known_nodes_id_seq', 16, true);
+
+
+--
+-- Data for Name: my_user; Type: TABLE DATA; Schema: public; Owner: peer1
+--
+
+COPY my_user (user_id, username, id) FROM stdin;
+0c0dde54-18f6-48c2-aedc-a01934e4200b	peer1	9
+\.
+
+
+--
+-- Name: my_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: peer1
+--
+
+SELECT pg_catalog.setval('my_user_id_seq', 9, true);
+
+
+--
+-- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: peer1
+--
+
+COPY posts (user_id, path_to_imagefile, text_content, id, post_id) FROM stdin;
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	Post1	9	150342964016544
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	Post2	10	150342964058988
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	Post2	11	150343017516783
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	Post1	12	150343017550510
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	posttext	13	150827188325265
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	posttext	14	150827193237035
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	A cosa stai pensando?	15	150828377345544
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	reload this!	16	150841156176708
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	reload this!	17	150841159338059
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	reload this!	18	150841182749909
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	reload this again!	19	150841188323062
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	reload this again!	20	150841191522017
+0c0dde54-18f6-48c2-aedc-a01934e4200b	\N	bzfljgsjgjds!	21	150841444523726
+\.
+
+
+--
+-- Name: posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: peer1
+--
+
+SELECT pg_catalog.setval('posts_id_seq', 21, true);
+
+
+--
+-- Name: comments comments_id_pk; Type: CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_id_pk PRIMARY KEY (id);
+
+
+--
+-- Name: friends friends_id_pk; Type: CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY friends
+    ADD CONSTRAINT friends_id_pk PRIMARY KEY (id);
+
+
+--
+-- Name: known_nodes known_nodes_id_pk; Type: CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY known_nodes
+    ADD CONSTRAINT known_nodes_id_pk PRIMARY KEY (id);
+
+
+--
+-- Name: my_user my_user_id_pk; Type: CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY my_user
+    ADD CONSTRAINT my_user_id_pk PRIMARY KEY (id);
+
+
+--
+-- Name: posts posts_id_pk; Type: CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY posts
+    ADD CONSTRAINT posts_id_pk PRIMARY KEY (id);
+
+
+--
+-- Name: comments_comment_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX comments_comment_id_uindex ON comments USING btree (comment_id);
+
+
+--
+-- Name: comments_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX comments_id_uindex ON comments USING btree (id);
+
+
+--
+-- Name: friends_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX friends_id_uindex ON friends USING btree (id);
+
+
+--
+-- Name: friends_user_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX friends_user_id_uindex ON friends USING btree (user_id);
+
+
+--
+-- Name: known_nodes_user_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX known_nodes_user_id_uindex ON known_nodes USING btree (user_id);
+
+
+--
+-- Name: my_user_user_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX my_user_user_id_uindex ON my_user USING btree (user_id);
+
+
+--
+-- Name: posts_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX posts_id_uindex ON posts USING btree (id);
+
+
+--
+-- Name: posts_post_id_uindex; Type: INDEX; Schema: public; Owner: peer1
+--
+
+CREATE UNIQUE INDEX posts_post_id_uindex ON posts USING btree (post_id);
+
+
+--
+-- Name: comments comments_friends_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_friends_user_id_fk FOREIGN KEY (user_id) REFERENCES friends(user_id);
+
+
+--
+-- Name: comments comments_posts_post_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_posts_post_id_fk FOREIGN KEY (post_id) REFERENCES posts(post_id);
+
+
+--
+-- Name: friends friends_known_nodes_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY friends
+    ADD CONSTRAINT friends_known_nodes_user_id_fk FOREIGN KEY (user_id) REFERENCES known_nodes(user_id);
+
+
+--
+-- Name: posts posts_my_user_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: peer1
+--
+
+ALTER TABLE ONLY posts
+    ADD CONSTRAINT posts_my_user_user_id_fk FOREIGN KEY (user_id) REFERENCES my_user(user_id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

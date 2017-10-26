@@ -194,7 +194,7 @@ class node(pb.Root):
 
     def remote_getKnownNodes(self, callerNode):
         result = Deferred()
-        self.incomingConnection(callerNode)
+        #self.incomingConnection(callerNode)
         self.interrogator.get_known_nodes(callerNode).addCallback(self.__convertKnownNodeUuidType, result)
         return result
         pass
@@ -336,6 +336,7 @@ class node(pb.Root):
         starter.addErrback(self.prov_errback)
         pass
 
+
     def prov_errback(self, e):
         logging.error(e)
         pass
@@ -349,7 +350,7 @@ class node(pb.Root):
         notVisitedNodesDict = dict()
 
         for i in nodesDict:
-            if ((not visitedNodesDict.has_key(i)) and (not nodesDict[i].user_id == myNode.user_id)):
+            if ((not visitedNodesDict.has_key(i)) and (nodesDict[i].user_id != myNode.user_id)):
                 visitedNodesDict[i] = nodesDict[i]
                 notVisitedNodesDict[i] = nodesDict[i]
 
@@ -416,7 +417,7 @@ class node(pb.Root):
 
         for postList_tuple in timeline:
             for post_package_tuple in postList_tuple[1]:
-                print(post_package_tuple[1]).getPost().text_content
+                # print(post_package_tuple[1]).getPost().text_content
                 result_timeline.append(post_package_tuple[1])
         result.callback(result_timeline)
         pass

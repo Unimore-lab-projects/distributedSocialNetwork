@@ -4,6 +4,7 @@ class FriendsFinderLayout(GridLayout):
     def __init__(self, myNode, *args):
         super(FriendsFinderLayout, self).__init__(*args)
         self.myNode = myNode
+        self.myNode.populateKnownNodes()
         myNode.getMyNode().addCallback(self.__got_my_user)
         self.size_hint = (None, None)
         self.cols = 1
@@ -12,13 +13,12 @@ class FriendsFinderLayout(GridLayout):
         self.spacing = 20
 
         self.bind(minimum_height=self.setter('height'))
-        self.myNode.populateKnownNodes()
 
     def __got_friends(self, result):
         print("FRIENDS FINDER RESULTS")
-        print(result)
+        for r in result:
+            print(r)
         print("######################")
-
 
     def __got_my_user(self, my_user_info):
         self.myNode.remote_getKnownNodes(my_user_info).addCallback(self.__got_friends)

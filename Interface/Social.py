@@ -37,9 +37,9 @@ logging = logging.getLogger(__name__)
 
 
 # funzione per cambiare schermata
-def switch_timelines_fcn():
-    # execfile('/home/archeffect/PycharmProjects/distributedSocialNetwork/Interface/utente.py')
-    pass
+# def switch_timelines_fcn():
+#     # execfile('/home/archeffect/PycharmProjects/distributedSocialNetwork/Interface/utente.py')
+#     pass
 
 
 class StatusBody(FloatLayout):
@@ -474,6 +474,17 @@ class MySocialApp(App, pb.Root):
         Window.add_widget(StatusBody(self.myWidget.myNode))
 
         self.sv.add_widget(self.myWidget)
+
+        self.friends_sv = ScrollView(size_hint=(None, None),
+                             size=(200, Window.height/2),
+                             do_scroll_x=False,
+                             do_scroll_y=True,
+                             pos_hint={'left': 0.2, 'center_y': 0.5})
+
+
+        from Interface.FriendsLayout import FriendsFinderLayout
+        friends_layout= FriendsFinderLayout(self.thisNode)
+        self.friends_sv.add_widget(friends_layout)
 
         reload_btn.on_press = self.reload_mywidget
 
