@@ -1,7 +1,6 @@
 # per cambiare schermata
 from kivy.support import install_twisted_reactor
 
-
 install_twisted_reactor()
 import logging
 
@@ -19,7 +18,6 @@ from kivy.config import Config
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
 from kivy.uix.actionbar import ActionPrevious, ActionButton, ActionBar, ActionView
-from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.button import Button
 from kivy.uix.dropdown import DropDown
 from kivy.uix.floatlayout import FloatLayout
@@ -28,6 +26,8 @@ from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
+
+from Interface.FriendsLayout import FriendsFinderLayout
 
 Config.set('graphics', 'fullscreen', 'auto')
 
@@ -121,18 +121,6 @@ class StatusBody(FloatLayout):
     def on_enter(self, *args):
         self.statusout.text = (self.statusout.text + '\n' + self.statusin.text)
         pass
-
-
-class ImageButton(ButtonBehavior, Image):
-    """
-    classe per trasformare una immagine
-    in un oggetto tipo Button
-    """
-
-    def __init__(self, img, *args):
-        super(ImageButton, self).__init__(*args)
-
-        self.source = img
 
 
 class Comments(GridLayout):
@@ -417,10 +405,6 @@ class MySocialApp(App, pb.Root):
             #     btn1.bind(on_release=lambda btn1: dropdown.select(btn1.text))
             #     dropdown.add_widget(btn1)
 
-            mainbutton = searchbtn
-            mainbutton.bind(on_release=dropdown.open)
-            dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
-
         Window.clearcolor = (1, 1, 1, 1)
 
         # layout actionbar
@@ -453,16 +437,16 @@ class MySocialApp(App, pb.Root):
                                background_normal='textinput2.png')
         searchuser.bind(on_text_validate=on_enter2)
 
-        searchbtn = ImageButton("srch.png")
-        searchbtn.size_hint = (None, None)
-        searchbtn.width = 80
-        searchbtn.height = 25
-        searchbtn.pos_hint = {'center_x': 0.545, 'top': 0.98}
-        searchbtn.font_size = '12sp'
+        # searchbtn = ImageButton("srch.png")
+        # searchbtn.size_hint = (None, None)
+        # searchbtn.width = 80
+        # searchbtn.height = 25
+        # searchbtn.pos_hint = {'center_x': 0.545, 'top': 0.98}
+        # searchbtn.font_size = '12sp'
         # searchbtn.on_press=self.btn2_pressed
 
-        Window.add_widget(searchuser)
-        Window.add_widget(searchbtn)
+        # Window.add_widget(searchuser)
+        # Window.add_widget(searchbtn)
         self.sv = ScrollView(size_hint=(None, None),
                              size=(500, Window.height),
                              do_scroll_x=False,
@@ -474,20 +458,18 @@ class MySocialApp(App, pb.Root):
         Window.add_widget(StatusBody(self.myWidget.myNode))
 
         self.sv.add_widget(self.myWidget)
+        friends_layout = FriendsFinderLayout(self.thisNode)
 
         self.friends_sv = ScrollView(size_hint=(None, None),
-                             size=(200, Window.height/2),
-                             do_scroll_x=False,
-                             do_scroll_y=True,
-                             pos_hint={'left': 0.2, 'center_y': 0.5})
+                                     size=(200, friends_layout.height / 2),
+                                     do_scroll_x=False,
+                                     do_scroll_y=True,
+                                     pos_hint={'center_x': 0.7, 'center_y': 0.7})
 
-
-        from Interface.FriendsLayout import FriendsFinderLayout
-        friends_layout= FriendsFinderLayout(self.thisNode)
-        self.friends_sv.add_widget(friends_layout)
-
+        # self.friends_sv.add_widget(friends_layout)
+        # Window.add_widget(self.friends_sv)
+        Window.add_widget(friends_layout)
         reload_btn.on_press = self.reload_mywidget
-
         return self.sv
 
     def get_ref_btn(self):
@@ -501,10 +483,9 @@ class MySocialApp(App, pb.Root):
 
 
 if __name__ == '__main__':
-    # TODO mostrare ricerca known nodes.
 
 
-    thisNode = node('../peer4.config',None)
+    thisNode = node('../peer4.config', None)
     thisNode.populateKnownNodes()
     port = int(thisNode.config['peer_port'])
     # port = 8003

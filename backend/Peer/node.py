@@ -192,6 +192,23 @@ class node(pb.Root):
         self.myNode = myNode
         pass
 
+    def remote_getUserInfo(self):
+        result = Deferred()
+        self.__getMyUser(True, result)
+        return result
+        pass
+
+    def requestUserInfo(self, remoteNode):
+        result = Deferred()
+        connection = self.currentConnections.connect(remoteNode)
+        connection.query("getUserInfo", [], self.__wait_remoteUserInfo, [result])
+        return result
+        pass
+
+    def __wait_remoteUserInfo(self, userInfo, resultDeferred):
+        resultDeferred.callback(userInfo)
+        pass
+
     def remote_getKnownNodes(self, callerNode):
         result = Deferred()
         #self.incomingConnection(callerNode)
