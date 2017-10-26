@@ -155,6 +155,9 @@ class node(pb.Root):
         # reactor.listenTCP(int(self.config["peer_port"]), pb.PBServerFactory(self))
         pass
 
+    def printErr(self, e):
+        print(e)
+
     def get_interrogator(self):
         return self.interrogator
 
@@ -219,7 +222,7 @@ class node(pb.Root):
     def remote_getPostsAndComments(self, callerNode, days):
         result = Deferred()
         self.incomingConnection(callerNode)
-        self.interrogator.get_recents(days).addCallback(self.__waitForPackageList, result)
+        self.interrogator.get_recents(days).addCallback(self.__waitForPackageList, result).addErrback(self.printErr)
         return result
         pass
 
@@ -369,7 +372,7 @@ class node(pb.Root):
         myTimelineDeferred = self.interrogator.get_recents()
         starter = DeferredList([myNodeDeferred, myFriendsDeferred])
         starter.addCallback(self.__getAllPostsAndComments,
-                            int(self.config["peer_default_timeline_days"]), friendsTimeline)
+                            int(self.config["peer_default_timeline_days"]), friendsTimeline).addErrback(self.printErr)
         result = DeferredList([myTimelineDeferred, friendsTimeline])
         return result
         pass
@@ -390,7 +393,7 @@ class node(pb.Root):
                 rootDeferreds.append(c.rootDeferred)
                 c.rootDeferred.addErrback(self.__getPostsAndCommentsErrback, myNode, myFriends[i])
 
-            rootDeferredList = DeferredList(rootDeferreds)
+            rootDeferredList = DeferredList(rootDeferreds).addErrback(self.printErr)
             rootDeferredList.addCallback(self.__getPostsAndCommentsCallback, myNode, days, result)
         else:
             print('Nessun amico trovato')
@@ -405,7 +408,7 @@ class node(pb.Root):
                 timeline.append(i[1].callRemote("getPostsAndComments", myNode, days))
 
         timelineDeferred = DeferredList(timeline)
-        timelineDeferred.addCallback(self.__waitForTimeline, result)
+        timelineDeferred.addCallback(self.__waitForTimeline, result).addErrback(self.printErr)
         pass
 
     def __waitForTimeline(self, timeline, result):

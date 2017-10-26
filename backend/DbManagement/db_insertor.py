@@ -10,7 +10,7 @@ import random
 
 
 class DatabaseInsertor:
-    def __init__(self, dbpool, nodeInfo):
+    def __init__(self, dbpool, nodeInfo=None):
         self.dbpool = dbpool
         Registry.DBPOOL = dbpool
         self.nodeInfo = nodeInfo

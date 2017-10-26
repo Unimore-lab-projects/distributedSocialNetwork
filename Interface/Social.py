@@ -493,7 +493,7 @@ if __name__ == '__main__':
     # TODO mostrare ricerca known nodes.
 
 
-    thisNode = node('../peer4.config')
+    thisNode = node('../peer4.config',None)
     thisNode.populateKnownNodes()
     port = int(thisNode.config['peer_port'])
     # port = 8003
