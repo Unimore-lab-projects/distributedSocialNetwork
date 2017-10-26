@@ -105,12 +105,14 @@ class remoteConnection:
         pass
 
     def __waitForRootCallback(self, rootRemoteRef, method, methodArgs, callback, callbackArgs):
-        self.rootRemoteReference = rootRemoteRef
-        deferredObj = rootRemoteRef.callRemote(method, *methodArgs)
-        if callback is not None:
-            deferredObj.addCallback(callback, *callbackArgs)
-        deferredObj.addErrback(self.__Errback, self.node)
-        return rootRemoteRef
+        if rootRemoteRef:
+            self.rootRemoteReference = rootRemoteRef
+            deferredObj = rootRemoteRef.callRemote(method, *methodArgs)
+            if callback is not None:
+                deferredObj.addCallback(callback, *callbackArgs)
+            deferredObj.addErrback(self.__Errback, self.node)
+            return rootRemoteRef
+        return None
         pass
 
     def __Errback(self, reason, remoteNode):

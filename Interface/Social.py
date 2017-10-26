@@ -2,13 +2,6 @@
 from kivy.support import install_twisted_reactor
 
 install_twisted_reactor()
-import logging
-
-from kivy.graphics.context_instructions import Color
-from kivy.graphics.vertex_instructions import Rectangle
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
 
 from twisted.internet import reactor
 from twisted.spread import pb
@@ -482,14 +475,16 @@ class MySocialApp(App, pb.Root):
         self.sv.add_widget(self.myWidget)
 
 
+import sys
+
 if __name__ == '__main__':
-
-
-    thisNode = node('../peer4.config', None)
+    i = 1
+    if sys.argv[1]:
+        i = sys.argv[1]
+    thisNode = node('../peer%s.config' % i, None)
     thisNode.populateKnownNodes()
     port = int(thisNode.config['peer_port'])
-    # port = 8003
     app = MySocialApp(thisNode)
-    reactor.listenTCP(port, pb.PBServerFactory(app))
+    reactor.listenTCP(port, pb.PBServerFactory(thisNode))
 
     app.run()
