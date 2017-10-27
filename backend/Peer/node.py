@@ -129,15 +129,28 @@ class nodeConnections:
     def connect(self, node):
         node = convertReceivedNodeInKnownNode(node)
         if self.connections.has_key(node.user_id):
-            return self.connections[node.user_id]
-        else:
-            self.connections[node.user_id] = remoteConnection(node, pb.PBClientFactory())
-            return self.connections[node.user_id]
-
-    def refresh(self, node):
-        node = convertReceivedNodeInKnownNode(node)
+            try:
+                self.connections[node.user_id].disconnect()
+            except Exception as e:
+                print e
+        
         self.connections[node.user_id] = remoteConnection(node, pb.PBClientFactory())
         return self.connections[node.user_id]
+        pass
+
+#    def connect(self, node):
+#        node = convertReceivedNodeInKnownNode(node)
+#        if self.connections.has_key(node.user_id):
+#            return self.connections[node.user_id]
+#        else:
+#            self.connections[node.user_id] = remoteConnection(node, pb.PBClientFactory())
+#            return self.connections[node.user_id]
+#        pass
+
+#    def refresh(self, node):
+#        node = convertReceivedNodeInKnownNode(node)
+#        self.connections[node.user_id] = remoteConnection(node, pb.PBClientFactory())
+#        return self.connections[node.user_id]
 
 
 class node(pb.Root):
